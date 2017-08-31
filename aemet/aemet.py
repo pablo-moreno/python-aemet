@@ -66,8 +66,8 @@ class PrediccionDiaria:
         self.temperatura = temperatura
         self.sensTermica = sensTermica
 
-class Town:
-    with open('data/towns.json') as f:
+class Municipio:
+    with open('data/municipios.json') as f:
         TOWNS = json.loads(f.read())
 
     def __init__(self, cod_auto, cpro, cmun, dc, nombre):
@@ -79,7 +79,7 @@ class Town:
 
     @staticmethod
     def load(data):
-        return Town(
+        return Municipio(
             cod_auto=data['CODAUTO'],
             cpro=data['CPRO'],
             cmun=data['CMUN'],
@@ -90,13 +90,13 @@ class Town:
     @staticmethod
     def get_municipio(id):
         print(id)
-        return Town()
+        return Municipio()
 
     @staticmethod
     def buscar(name):
-        town = list(filter(lambda t: name in t['NOMBRE'], Town.TOWNS))
-        town = Town.load(town[0])
-        return town
+        municipio = list(filter(lambda t: name in t['NOMBRE'], Municipio.TOWNS))
+        municipio = Municipio.load(municipio[0])
+        return municipio
 
     def get_codigo(self):
         return '{}{}'.format(self.cpro, self.cmun)
@@ -126,18 +126,18 @@ class AemetClient:
             'error': r.status_code
         }
 
-    def get_prediccion(self, town_code, period=PERIOD_WEEKLY):
+    def get_prediccion(self, codigo_municipio, period=PERIOD_WEEKLY):
         if period == PERIOD_WEEKLY:
             url = '{}{}{}'.format(
                 BASE_URL,
                 WEEKLY_PREDICTION_API_URL,
-                town_code
+                codigo_municipio
             )
         else:
             url = '{}{}{}'.format(
                 BASE_URL,
                 WEEKLY_PREDICTION_API_URL,
-                town_code
+                codigo_municipio
             )
         data = self._get_request_data(url)
         return Prediccion.load(data)
@@ -157,9 +157,9 @@ class AemetClient:
         return data
 
 if __name__ == '__main__':
-    town = Town.buscar('Coronada')
+    municipio = Municipio.buscar('Coronada')
     client = AemetClient()
-    p = client.get_prediccion(town.get_codigo(), period=PERIOD_WEEKLY)
+    p = client.get_prediccion(municipio.get_codigo(), period=PERIOD_WEEKLY)
     print(p.nombre)
     for dia in p.prediccion['dia']:
         print(dia['fecha'])
