@@ -102,4 +102,5 @@ ENV/
 api.key
 test.json
 /aemet/data
+*.jpg
 # End of https://www.gitignore.io/api/python

@@ -4,13 +4,16 @@ import json
 import urllib3
 
 # Constants
-BASE_URL = 'https://opendata.aemet.es/opendata/api/'
 API_KEY = open('data/api.key', 'r').read().strip()
+BASE_URL = 'https://opendata.aemet.es/opendata/api/'
+TOWN_API_URL = 'maestro/municipios/'
 WEEKLY_PREDICTION_API_URL = 'prediccion/especifica/municipio/diaria/'
 DAILY_PREDICTION_API_URL = 'prediccion/especifica/municipio/horaria/'
-PERIOD_WEEKLY = 'PERIOD_WEEKLY'
-PERIOD_DAILY = 'PERIOD_DAILY'
-TOWN_API_URL = 'maestro/municipios/'
+FIRE_RISK_ESTIMATED_MAP = 'incendios/mapasriesgo/estimado/area/{}'
+FIRE_RISK_PREDICTED_MAP = 'incendios/mapasriesgo/previsto/dia/{}/area/{}'
+PERIOD_WEEKLY, PERIOD_DAILY = 'PERIOD_WEEKLY', 'PERIOD_DAILY'
+TOMORROW, PAST_TOMORROW, IN_THREE_DAYS = range(1, 4)
+PENINSULA, CANARIAS, BALEARES = 'p', 'c', 'b'
 
 # Disable Insecure Request Warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -198,6 +201,39 @@ class AemetClient:
         data = self._get_request_data(url)
         return Prediccion.load(data, period)
 
+    def _download_image_from_url(self, url, output_file, verbose=True):
+        if verbose:
+            print('Downloading from {}...'.format(url))
+        try:
+            r = requests.get(
+                url,
+                params=self.querystring,
+                headers=self.headers,
+                verify=False
+            )
+            img_url = r.json()['datos']
+            data = requests.get(img_url, verify=False).content
+            with open(output_file, 'wb') as f:
+                f.write(data)
+        except:
+            return {
+                'status': r.json()['estado']
+            }
+        return {
+            'status': 200,
+            'output_file': output_file
+        }
+
+    def descargar_mapa_riesgo_previsto_incendio(
+            self, output_file, dia=TOMORROW, area=PENINSULA, verbose=True):
+        url = '{}{}'.format(BASE_URL, FIRE_RISK_PREDICTED_MAP.format(dia, area))
+        return self._download_image_from_url(url, output_file, verbose)
+
+    def descargar_mapa_riesgo_estimado_incendio(
+            self, output_file, area=PENINSULA, verbose=True):
+        url = '{}{}'.format(BASE_URL, FIRE_RISK_ESTIMATED_MAP.format(area))
+        return self._download_image_from_url(url, output_file, verbose)
+
     def get_municipio(self, name):
         url = '{}{}'.format(BASE_URL, TOWN_API_URL)
         r = requests.get(
@@ -213,7 +249,13 @@ class AemetClient:
         return data
 
 if __name__ == '__main__':
-    municipio = Municipio.buscar('Fuenmayor')
+    # municipio = Municipio.buscar('Fuenmayor')
     client = AemetClient()
-    prediccion = client.get_prediccion(municipio.get_codigo(), period=PERIOD_DAILY)
-    print(prediccion.prediccion[2].ocaso)
+    dias, areas = [TOMORROW, PAST_TOMORROW, IN_THREE_DAYS], [PENINSULA, CANARIAS, BALEARES]
+    for area in areas:
+        print(client.descargar_mapa_riesgo_estimado_incendio('estimado-{}.jpg'.format(area), area=area))
+    for i, area in enumerate(areas):
+        for dia in dias:
+            print(client.descargar_mapa_riesgo_previsto_incendio('previsto-{}{}.jpg'.format(area, dia), dia=dia, area=area))
+    # prediccion = client.get_prediccion(municipio.get_codigo(), period=PERIOD_DAILY)
+    # print(prediccion.prediccion[2].ocaso)
