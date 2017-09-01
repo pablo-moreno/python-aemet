@@ -1,14 +1,19 @@
 import requests
 import csv
 import json
+import urllib3
 
+# Constants
 BASE_URL = 'https://opendata.aemet.es/opendata/api/'
 API_KEY = open('data/api.key', 'r').read().strip()
 WEEKLY_PREDICTION_API_URL = 'prediccion/especifica/municipio/diaria/'
 DAILY_PREDICTION_API_URL = 'prediccion/especifica/municipio/horaria/'
-PERIOD_WEEKLY = 0
-PERIOD_DAILY = 1
+PERIOD_WEEKLY = 'PERIOD_WEEKLY'
+PERIOD_DAILY = 'PERIOD_DAILY'
 TOWN_API_URL = 'maestro/municipios/'
+
+# Disable Insecure Request Warnings
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Prediccion:
     def __init__(self, provincia, version, id, origen,
