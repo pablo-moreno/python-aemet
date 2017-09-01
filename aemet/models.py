@@ -1,12 +1,14 @@
-from constants import (
-    API_KEY, BASE_URL, DAILY_PREDICTION_API_URL,
-    PERIOD_WEEKLY, PERIOD_DAILY, WEEKLY_PREDICTION_API_URL,
-    TOWN_API_URL
-)
 import requests
 import csv
 import json
-from contextlib import suppress
+
+BASE_URL = 'https://opendata.aemet.es/opendata/api/'
+API_KEY = open('data/api.key', 'r').read().strip()
+WEEKLY_PREDICTION_API_URL = 'prediccion/especifica/municipio/diaria/'
+DAILY_PREDICTION_API_URL = 'prediccion/especifica/municipio/horaria/'
+PERIOD_WEEKLY = 0
+PERIOD_DAILY = 1
+TOWN_API_URL = 'maestro/municipios/'
 
 class Prediccion:
     def __init__(self, provincia, version, id, origen,
@@ -22,9 +24,9 @@ class Prediccion:
     @staticmethod
     def load(data, period):
         if period == PERIOD_DAILY:
-            prediccion = PrediccionDiaria.load(data['prediccion'])
+            prediccion = PrediccionPorHoras.load(data['prediccion'])
         elif period == PERIOD_WEEKLY:
-            prediccion = PrediccionSemanal.load(data['prediccion'])
+            prediccion = PrediccionDia.load(data['prediccion'])
 
         return Prediccion(
             provincia=data['provincia'],
@@ -36,7 +38,7 @@ class Prediccion:
             nombre=data['nombre']
         )
 
-class PrediccionSemanal:
+class PrediccionDia:
     def __init__(self, uvMax=0, rachaMax=[], fecha='', sensTermica=[], humedadRelativa=[],
             temperatura=[], estadoCielo=[], cotaNieveProv=[], viento=[], probPrecipitacion=[]):
         self.uvMax = uvMax
@@ -59,7 +61,7 @@ class PrediccionSemanal:
             except KeyError:
                 uvMax = []
             predicciones.append(
-                PrediccionSemanal(
+                PrediccionDia(
                     uvMax=uvMax,
                     rachaMax=dia['rachaMax'],
                     fecha=dia['fecha'],
@@ -73,7 +75,7 @@ class PrediccionSemanal:
             )
         return predicciones
 
-class PrediccionDiaria:
+class PrediccionPorHoras:
     def __init__(self, estadoCielo=[], precipitacion=[], vientoAndRachaMax=[], ocaso='',
             probTormenta=[], probPrecipitacion=[], orto='', humedadRelativa=[], nieve=[],
             probNieve=[], fecha='', temperatura=[], sensTermica=[]):
@@ -97,7 +99,7 @@ class PrediccionDiaria:
         for p in data['dia']:
             try:
                 periodos.append(
-                    PrediccionDiaria(
+                    PrediccionPorHoras(
                         estadoCielo=p['estadoCielo'],
                         precipitacion=p['precipitacion'],
                         vientoAndRachaMax=p['vientoAndRachaMax'],
@@ -158,9 +160,7 @@ class AemetClient:
         self.querystring = {
             'api_key': self.api_key
         }
-        self.headers = {
-            'cache-control': 'no-cache'
-        }
+        self.headers = {}
 
     def _get_request_data(self, url):
         r = requests.get(

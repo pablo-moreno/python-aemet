@@ -3,7 +3,6 @@ A setuptools based setup module.
 
 See:
 https://packaging.python.org/en/latest/distributing.html
-https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
@@ -25,7 +24,7 @@ with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
     requirements = f.read().splitlines()
 
 setup(
-    name='python-aemet',
+    name='aemet',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -36,7 +35,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/pablius93/pmp',
+    url='https://github.com/pablius93/python-aemet',
 
     # Author details
     author='Pablo Moreno',
@@ -97,7 +96,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'aemet=pmp:main',
+            'aemet=aemet:main',
         ],
     },
 )
