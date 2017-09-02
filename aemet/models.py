@@ -9,11 +9,14 @@ BASE_URL = 'https://opendata.aemet.es/opendata/api/'
 TOWN_API_URL = 'maestro/municipios/'
 WEEKLY_PREDICTION_API_URL = 'prediccion/especifica/municipio/diaria/'
 DAILY_PREDICTION_API_URL = 'prediccion/especifica/municipio/horaria/'
+TEXT_PREDICTION_API_URL = 'prediccion/{}/{}/{}'
 FIRE_RISK_ESTIMATED_MAP = 'incendios/mapasriesgo/estimado/area/{}'
 FIRE_RISK_PREDICTED_MAP = 'incendios/mapasriesgo/previsto/dia/{}/area/{}'
 PERIOD_WEEKLY, PERIOD_DAILY = 'PERIOD_WEEKLY', 'PERIOD_DAILY'
-TOMORROW, PAST_TOMORROW, IN_THREE_DAYS = range(1, 4)
+TOMORROW, THE_DAY_AFTER_TOMORROW, IN_THREE_DAYS = range(1, 4)
 PENINSULA, CANARIAS, BALEARES = 'p', 'c', 'b'
+NACIONAL, CCAA, PROVINCIA = 'nacional', 'ccaa', 'provincia'
+HOY, MANANA, PASADO_MANANA, MEDIO_PLAZO, TENDENCIA = 'hoy', 'manana', 'pasadomanana', 'medioplazo', 'tendencia'
 
 # Disable Insecure Request Warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -170,7 +173,9 @@ class AemetClient:
         }
         self.headers = {}
 
-    def _get_request_data(self, url):
+    def _get_request_data(self, url, verbose=False):
+        if verbose:
+            print(url)
         r = requests.get(
             url,
             headers=self.headers,
@@ -184,6 +189,60 @@ class AemetClient:
         return {
             'error': r.status_code
         }
+
+    def _get_request_normalized_data(self, url, verbose=False):
+        if verbose:
+            print(url)
+        r = requests.get(
+            url,
+            headers=self.headers,
+            params=self.querystring,
+            verify=False    # Avoid SSL Verification .__.
+        )
+        if r.status_code == 200:
+            r = requests.get(r.json()['datos'], verify=False)
+            data = r.text
+            return data
+        return {
+            'error': r.status_code
+        }
+
+    def _download_image_from_url(self, url, output_file, verbose=True):
+        if verbose:
+            print('Downloading from {}...'.format(url))
+        try:
+            r = requests.get(
+            url,
+                params=self.querystring,
+                headers=self.headers,
+                verify=False
+            )
+            img_url = r.json()['datos']
+            data = requests.get(img_url, verify=False).content
+            with open(output_file, 'wb') as f:
+                f.write(data)
+        except:
+            return {
+                'status': r.json()['estado']
+            }
+            return {
+                'status': 200,
+                'output_file': output_file
+            }
+
+    def get_municipio(self, name):
+        url = '{}{}'.format(BASE_URL, TOWN_API_URL)
+        r = requests.get(
+            url,
+            params = {
+                "nombre": name,
+                'api_key': self.api_key
+            },
+            headers=self.headers,
+            verify=False
+        )
+        data = r.json()
+        return data
 
     def get_prediccion(self, codigo_municipio, period=PERIOD_WEEKLY):
         if period == PERIOD_WEEKLY:
@@ -201,28 +260,16 @@ class AemetClient:
         data = self._get_request_data(url)
         return Prediccion.load(data, period)
 
-    def _download_image_from_url(self, url, output_file, verbose=True):
-        if verbose:
-            print('Downloading from {}...'.format(url))
-        try:
-            r = requests.get(
-                url,
-                params=self.querystring,
-                headers=self.headers,
-                verify=False
-            )
-            img_url = r.json()['datos']
-            data = requests.get(img_url, verify=False).content
-            with open(output_file, 'wb') as f:
-                f.write(data)
-        except:
-            return {
-                'status': r.json()['estado']
-            }
-        return {
-            'status': 200,
-            'output_file': output_file
-        }
+    def get_prediccion_normalizada(self, ambito=NACIONAL, dia=HOY, ccaa='',
+            provincia='', fecha_elaboracion=''):
+        if ccaa and provincia:
+            raise Exception('You cannot set "provincia" and "ccaa" at the same time')
+        if (ccaa or provincia) and ambito == NACIONAL:
+            raise Exception('You cannot specify "provincia" or "ccaa" when you set "ambito=NACIONAL"')
+        url = '{}{}'.format(BASE_URL, TEXT_PREDICTION_API_URL.format(ambito, dia, ccaa + provincia))
+        if fecha_elaboracion:
+            url += 'elaboracion/{}/'.format(fecha_elaboracion)
+        return self._get_request_normalized_data(url, verbose=True)
 
     def descargar_mapa_riesgo_previsto_incendio(
             self, output_file, dia=TOMORROW, area=PENINSULA, verbose=True):
@@ -234,28 +281,12 @@ class AemetClient:
         url = '{}{}'.format(BASE_URL, FIRE_RISK_ESTIMATED_MAP.format(area))
         return self._download_image_from_url(url, output_file, verbose)
 
-    def get_municipio(self, name):
-        url = '{}{}'.format(BASE_URL, TOWN_API_URL)
-        r = requests.get(
-            url,
-            params = {
-                "nombre": name,
-                'api_key': self.api_key
-            },
-            headers=self.headers,
-            verify=False
-        )
-        data = r.json()
-        return data
-
 if __name__ == '__main__':
-    # municipio = Municipio.buscar('Fuenmayor')
     client = AemetClient()
-    dias, areas = [TOMORROW, PAST_TOMORROW, IN_THREE_DAYS], [PENINSULA, CANARIAS, BALEARES]
-    for area in areas:
-        print(client.descargar_mapa_riesgo_estimado_incendio('estimado-{}.jpg'.format(area), area=area))
-    for i, area in enumerate(areas):
-        for dia in dias:
-            print(client.descargar_mapa_riesgo_previsto_incendio('previsto-{}{}.jpg'.format(area, dia), dia=dia, area=area))
-    # prediccion = client.get_prediccion(municipio.get_codigo(), period=PERIOD_DAILY)
-    # print(prediccion.prediccion[2].ocaso)
+    dias, areas = [TOMORROW, THE_DAY_AFTER_TOMORROW, IN_THREE_DAYS], [PENINSULA, CANARIAS, BALEARES]
+    data = client.get_prediccion_normalizada(
+        ambito=NACIONAL,
+        dia=HOY,
+        ccaa='rio'
+    )
+    print(data)

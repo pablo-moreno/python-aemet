@@ -1,0 +1,66 @@
+[
+    {
+        "cod": "arn",
+        "nombre": "Arag\u00f3n"
+    },
+    {
+        "cod": "ast",
+        "nombre": "Asturias"
+    },
+    {
+        "cod": "bal",
+        "nombre": "Ballears, Illes"
+    },
+    {
+        "cod": "coo",
+        "nombre": "Canarias"
+    },
+    {
+        "cod": "can",
+        "nombre": "Cantabria"
+    },
+    {
+        "cod": "cle",
+        "nombre": "Castilla y Le\u00f3n"
+    },
+    {
+        "cod": "clm",
+        "nombre": "Castilla - La Mancha"
+    },
+    {
+        "cod": "cat",
+        "nombre": "Catalu\u00f1a"
+    },
+    {
+        "cod": "val",
+        "nombre": "Comunitat Valenciana"
+    },
+    {
+        "cod": "ext",
+        "nombre": "Extremadura"
+    },
+    {
+        "cod": "gal",
+        "nombre": "Galicia"
+    },
+    {
+        "cod": "mad",
+        "nombre": "Madrid, Comunidad de"
+    },
+    {
+        "cod": "mur",
+        "nombre": "Murcia, Regi\u00f3n de"
+    },
+    {
+        "cod": "nav",
+        "nombre": "Navarra, Comunidad Foral de"
+    },
+    {
+        "cod": "pva",
+        "nombre": "Pa\u00eds Vasco"
+    },
+    {
+        "cod": "rio",
+        "nombre": "Rioja, La"
+    }
+]
