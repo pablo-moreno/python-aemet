@@ -12,6 +12,9 @@ DAILY_PREDICTION_API_URL = 'prediccion/especifica/municipio/horaria/'
 TEXT_PREDICTION_API_URL = 'prediccion/{}/{}/{}'
 FIRE_RISK_ESTIMATED_MAP = 'incendios/mapasriesgo/estimado/area/{}'
 FIRE_RISK_PREDICTED_MAP = 'incendios/mapasriesgo/previsto/dia/{}/area/{}'
+NATIONAL_RADAR_API_URL = 'red/radar/nacional'
+REGIONAL_RADAR_API_URL = 'red/radar/regional/{}'
+LIGHTNINGS_MAP_API_URL = 'red/rayos/mapa/'
 PERIOD_WEEKLY, PERIOD_DAILY = 'PERIOD_WEEKLY', 'PERIOD_DAILY'
 TOMORROW, THE_DAY_AFTER_TOMORROW, IN_THREE_DAYS = range(1, 4)
 PENINSULA, CANARIAS, BALEARES = 'p', 'c', 'b'
@@ -218,6 +221,8 @@ class AemetClient:
                 verify=False
             )
             img_url = r.json()['datos']
+            if verbose:
+                print(img_url)
             data = requests.get(img_url, verify=False).content
             with open(output_file, 'wb') as f:
                 f.write(data)
@@ -225,10 +230,10 @@ class AemetClient:
             return {
                 'status': r.json()['estado']
             }
-            return {
-                'status': 200,
-                'output_file': output_file
-            }
+        return {
+            'status': 200,
+            'output_file': output_file
+        }
 
     def get_municipio(self, name):
         url = '{}{}'.format(BASE_URL, TOWN_API_URL)
@@ -281,12 +286,18 @@ class AemetClient:
         url = '{}{}'.format(BASE_URL, FIRE_RISK_ESTIMATED_MAP.format(area))
         return self._download_image_from_url(url, output_file, verbose)
 
+    def descargar_mapa_radar_nacional(self, output_file, verbose=False):
+        url = '{}{}'.format(BASE_URL, NATIONAL_RADAR_API_URL)
+        return self._download_image_from_url(url, output_file, verbose)
+
+    def descargar_mapa_radar_regional(self, output_file, region, verbose=False):
+        url = '{}{}'.format(BASE_URL, REGIONAL_RADAR_API_URL.format(region))
+        return self._download_image_from_url(url, output_file, verbose)
+
+    def descargar_mapa_rayos(self, output_file, verbose=False):
+        url = '{}{}'.format(BASE_URL, LIGHTNINGS_MAP_API_URL)
+        return self._download_image_from_url(url, output_file, verbose)
+
 if __name__ == '__main__':
     client = AemetClient()
-    dias, areas = [TOMORROW, THE_DAY_AFTER_TOMORROW, IN_THREE_DAYS], [PENINSULA, CANARIAS, BALEARES]
-    data = client.get_prediccion_normalizada(
-        ambito=NACIONAL,
-        dia=HOY,
-        ccaa='rio'
-    )
-    print(data)
+    print(client.descargar_mapa_rayos('prueba.jpg', verbose=True))
