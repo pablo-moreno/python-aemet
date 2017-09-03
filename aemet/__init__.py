@@ -1,5 +1,5 @@
+from aemet.models import *  # noqa
 import click
-from aemet.models import AemetClient, Municipio
 
 @click.command()
 @click.option('--option', default=1, help='')

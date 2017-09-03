@@ -5,12 +5,17 @@ import urllib3
 from datetime import datetime
 
 # Constants
-API_KEY = open('data/api.key', 'r').read().strip()
+try:
+    API_KEY = open('data/api.key', 'r').read().strip()
+except:
+    API_KEY = ''
 BASE_URL = 'https://opendata.aemet.es/opendata/api/'
-TOWN_API_URL = 'maestro/municipios/'
+MUNICIPIOS_API_URL = 'maestro/municipios/'
 PREDICCION_SEMANAL_API_URL = 'prediccion/especifica/municipio/diaria/'
 PREDICCION_POR_HORAS_API_URL = 'prediccion/especifica/municipio/horaria/'
 PREDICCION_NORMALIZADA_API_URL = 'prediccion/{}/{}/{}'
+OBSERVACION_CONVENCIONAL_API_URL = 'observacion/convencional/todas/'
+OBSERVACION_CONVENCIONAL_ESTACION_API_URL = 'observacion/convencional/datos/estacion/{}/'
 MAPA_RIESGO_INCENDIOS_ESTIMADO = 'incendios/mapasriesgo/estimado/area/{}'
 MAPA_RIESGO_INCENDIOS_PREVISTO = 'incendios/mapasriesgo/previsto/dia/{}/area/{}'
 MAPA_ANALISIS_API_URL = 'mapasygraficos/analisis/'
@@ -24,6 +29,8 @@ MAPAS_SIGNIFICATIVOS_DIAS = {
 MAPA_RAYOS_API_URL = 'red/rayos/mapa/'
 RADAR_NACIONAL_API_URL = 'red/radar/nacional'
 RADAR_REGIONAL_API_URL = 'red/radar/regional/{}'
+SATELITE_SST = 'satelites/producto/sst/'
+SATELITE_NVDI = 'satelites/producto/nvdi/'
 PERIODO_SEMANA, PERIODO_DIA = 'PERIODO_SEMANA', 'PERIODO_DIA'
 INCENDIOS_MANANA, INCENDIOS_PASADO_MANANA, INCENDIOS_EN_3_DIAS = range(1, 4)
 PENINSULA, CANARIAS, BALEARES = 'p', 'c', 'b'
@@ -142,6 +149,58 @@ class PrediccionPorHoras:
                 pass
         return periodos
 
+class Observacion:
+    def __init__(self, idema, lon, lat, fint, prec, alt, vmax, vv, dv, dmax, ubi):
+        self.idema = idema
+        self.lon = lon
+        self.lat = lat
+        self.fint = fint
+        self.prec = prec
+        self.alt = alt
+        self.vmax = vmax
+        self.vv = vv
+        self.dv = dv
+        self.dmax = dmax
+        self.ubi = ubi
+
+    @staticmethod
+    def load(data, multiple=False):
+        if multiple:
+            observaciones = []
+            for o in data:
+                try:
+                    observaciones.append(
+                        Observacion(
+                            idema=o['idema'],
+                            lon=o['lon'],
+                            lat=o['lat'],
+                            fint=o['fint'],
+                            prec=o['prec'],
+                            alt=o['alt'],
+                            vmax=o['vmax'],
+                            vv=o['vv'],
+                            dv=o['dv'],
+                            dmax=o['dmax'],
+                            ubi=o['ubi']
+                        )
+                    )
+                except KeyError:
+                    print('Error {}'.format(o['idema']))
+            return observaciones
+        return Observacion(
+            idema=data['idema'],
+            lon=data['lon'],
+            lat=data['lat'],
+            fint=data['fint'],
+            prec=data['prec'],
+            alt=data['alt'],
+            vmax=data['vmax'],
+            vv=data['vv'],
+            dv=data['dv'],
+            dmax=data['dmax'],
+            ubi=data['ubi']
+        )
+
 class Municipio:
     with open('data/municipios.json') as f:
         MUNICIPIOS = json.loads(f.read())
@@ -191,7 +250,7 @@ class AemetClient:
         self.headers = {}
         self.verbose = verbose
 
-    def _get_request_data(self, url):
+    def _get_request_data(self, url, todos=False):
         if self.verbose:
             print(url)
         r = requests.get(
@@ -202,7 +261,10 @@ class AemetClient:
         )
         if r.status_code == 200:
             r = requests.get(r.json()['datos'], verify=False)
-            data = r.json()[0]
+            if todos:
+                data = r.json()
+            else:
+                data = r.json()[0]
             return data
         return {
             'error': r.status_code
@@ -261,7 +323,7 @@ class AemetClient:
         return '{:%Y-%m-%d}'.format(datetime.now())
 
     def get_municipio(self, name):
-        url = '{}{}'.format(BASE_URL, TOWN_API_URL)
+        url = '{}{}'.format(BASE_URL, MUNICIPIOS_API_URL)
         r = requests.get(
             url,
             params = {
@@ -301,6 +363,21 @@ class AemetClient:
             url += 'elaboracion/{}/'.format(fecha_elaboracion)
         return self._get_request_normalized_data(url)
 
+    def get_observacion_convencional(self, estacion=''):
+        if estacion:
+            url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_ESTACION_API_URL.format(estacion))
+            return Observacion.load(self._get_request_data(url))
+        else:
+            url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_API_URL)
+            return Observacion.load(self._get_request_data(url, todos=True), multiple=True)
+
+    def _get_archivo_codigos_idema(self, archivo_salida):
+        url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_API_URL)
+        estaciones = self._get_request_data(url, todos=True)
+        data = {estacion['idema']: estacion['ubi'] for estacion in estaciones}
+        with open(archivo_salida, 'w') as f:
+            f.write(json.dumps(data, indent=4))
+
     def descargar_mapa_analisis(self, archivo_salida):
         url = '{}{}'.format(BASE_URL, MAPA_ANALISIS_API_URL)
         return self._download_image_from_url(url, archivo_salida)
@@ -336,6 +413,14 @@ class AemetClient:
         url = '{}{}'.format(BASE_URL, MAPA_RAYOS_API_URL)
         return self._download_image_from_url(url, archivo_salida)
 
+    def descargar_mapa_satelite_sst(self, archivo_salida):
+        url = '{}{}'.format(BASE_URL, SATELITE_SST)
+        return self._download_image_from_url(url, archivo_salida)
+
+    def descargar_mapa_satelite_nvdi(self, archivo_salida):
+        url = '{}{}'.format(BASE_URL, SATELITE_NVDI)
+        return self._download_image_from_url(url, archivo_salida)
+
 if __name__ == '__main__':
     client = AemetClient(verbose=True)
-    print(client.descargar_mapas_significativos('prueba.jpg'))
+    print(client.descargar_mapa_satelite_nvdi('prueba.jpg'))
