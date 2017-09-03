@@ -14,6 +14,9 @@ MUNICIPIOS_API_URL = 'maestro/municipios/'
 PREDICCION_SEMANAL_API_URL = 'prediccion/especifica/municipio/diaria/'
 PREDICCION_POR_HORAS_API_URL = 'prediccion/especifica/municipio/horaria/'
 PREDICCION_NORMALIZADA_API_URL = 'prediccion/{}/{}/{}'
+PREDICCION_MARITIMA_ALTA_MAR_API_URL = 'prediccion/maritima/altamar/area/{}'
+PREDICCION_MARITIMA_COSTERA_API_URL = 'prediccion/maritima/costera/costa/{}'
+TIPO_COSTERA, TIPO_ALTA_MAR = 'costera', 'altamar'
 OBSERVACION_CONVENCIONAL_API_URL = 'observacion/convencional/todas/'
 OBSERVACION_CONVENCIONAL_ESTACION_API_URL = 'observacion/convencional/datos/estacion/{}/'
 MAPA_RIESGO_INCENDIOS_ESTIMADO = 'incendios/mapasriesgo/estimado/area/{}'
@@ -31,6 +34,7 @@ RADAR_NACIONAL_API_URL = 'red/radar/nacional'
 RADAR_REGIONAL_API_URL = 'red/radar/regional/{}'
 SATELITE_SST = 'satelites/producto/sst/'
 SATELITE_NVDI = 'satelites/producto/nvdi/'
+CONTAMINACION_FONDO_ESTACION_API_URL = 'red/especial/contaminacionfondo/estacion/{}/'
 PERIODO_SEMANA, PERIODO_DIA = 'PERIODO_SEMANA', 'PERIODO_DIA'
 INCENDIOS_MANANA, INCENDIOS_PASADO_MANANA, INCENDIOS_EN_3_DIAS = range(1, 4)
 PENINSULA, CANARIAS, BALEARES = 'p', 'c', 'b'
@@ -322,6 +326,13 @@ class AemetClient:
         print(datetime.now())
         return '{:%Y-%m-%d}'.format(datetime.now())
 
+    def _get_archivo_codigos_idema(self, archivo_salida):
+        url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_API_URL)
+        estaciones = self._get_request_data(url, todos=True)
+        data = {estacion['idema']: estacion['ubi'] for estacion in estaciones}
+        with open(archivo_salida, 'w') as f:
+            f.write(json.dumps(data, indent=4))
+
     def get_municipio(self, name):
         url = '{}{}'.format(BASE_URL, MUNICIPIOS_API_URL)
         r = requests.get(
@@ -371,12 +382,24 @@ class AemetClient:
             url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_API_URL)
             return Observacion.load(self._get_request_data(url, todos=True), multiple=True)
 
-    def _get_archivo_codigos_idema(self, archivo_salida):
-        url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_API_URL)
-        estaciones = self._get_request_data(url, todos=True)
-        data = {estacion['idema']: estacion['ubi'] for estacion in estaciones}
-        with open(archivo_salida, 'w') as f:
-            f.write(json.dumps(data, indent=4))
+    def get_contaminacion_fondo(self, estacion):
+        url = '{}{}'.format(BASE_URL, CONTAMINACION_FONDO_ESTACION_API_URL.format(estacion))
+        data = self._get_request_normalized_data(url).splitlines()
+        return data
+
+    def get_prediccion_maritima(self, tipo=TIPO_COSTERA, costa='', area=''):
+        if tipo == TIPO_COSTERA:
+            if not costa:
+                raise Exception('You must provide a "costa" value')
+            url = '{}{}'.format(BASE_URL, PREDICCION_MARITIMA_COSTERA_API_URL.format(costa))
+        elif tipo == TIPO_ALTA_MAR:
+            if not area:
+                raise Exception('You must provide an "area" value')
+            url = '{}{}'.format(BASE_URL, PREDICCION_MARITIMA_ALTA_MAR_API_URL.format(area))
+        else:
+            raise Exception('Error: "tipo" value not valid')
+
+        return self._get_request_data(url)
 
     def descargar_mapa_analisis(self, archivo_salida):
         url = '{}{}'.format(BASE_URL, MAPA_ANALISIS_API_URL)
@@ -423,4 +446,4 @@ class AemetClient:
 
 if __name__ == '__main__':
     client = AemetClient(verbose=True)
-    print(client.descargar_mapa_satelite_nvdi('prueba.jpg'))
+    print(client.get_prediccion_maritima(tipo='kjdbfkajsf', area='0'))

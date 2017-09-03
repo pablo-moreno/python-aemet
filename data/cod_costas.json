@@ -1,0 +1,30 @@
+[
+    {
+        "costa": "Costa de Asturias",
+        "cod": "41"
+    },
+    {
+        "costa": "Costa de Andaluc\u00eda Occidental y Ceuta",
+        "cod": "42"
+    },
+    {
+        "costa": "Costa de las Islas Canarias",
+        "cod": "43"
+    },
+    {
+        "costa": "Costa de Illes Balears",
+        "cod": "44"
+    },
+    {
+        "costa": "Costa de Catalu\u00f1a",
+        "cod": "45"
+    },
+    {
+        "costa": "Costa de Valencia y Murcia",
+        "cod": "46"
+    },
+    {
+        "costa": "Costa de Andaluc\u00eda Oriental y Melilla",
+        "cod": "47"
+    }
+]

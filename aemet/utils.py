@@ -16,6 +16,6 @@ def csv_to_json(csv_file, json_file):
 
 if __name__ == '__main__':
     csv_to_json(
-        os.path.join('data', 'cod_ccaa.csv'),
-        os.path.join('data', 'cod_ccaa.json'),
+        os.path.join('..', 'data', 'cod_costas.csv'),
+        os.path.join('..', 'data', 'cod_costas.json'),
     )
