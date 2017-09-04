@@ -291,6 +291,17 @@ class AemetClient:
             'error': r.status_code
         }
 
+    def _get_fecha_hoy():
+        print(datetime.now())
+        return '{:%Y-%m-%d}'.format(datetime.now())
+
+    def _get_archivo_codigos_idema(self, archivo_salida):
+        url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_API_URL)
+        estaciones = self._get_request_data(url, todos=True)
+        data = {estacion['idema']: estacion['ubi'] for estacion in estaciones}
+        with open(archivo_salida, 'w') as f:
+            f.write(json.dumps(data, indent=4))
+
     def _download_image_from_url(self, url, archivo_salida):
         if self.verbose:
             print('Downloading from {}...'.format(url))
@@ -321,17 +332,6 @@ class AemetClient:
             'status': 200,
             'archivo_salida': archivo_salida
         }
-
-    def _get_fecha_hoy():
-        print(datetime.now())
-        return '{:%Y-%m-%d}'.format(datetime.now())
-
-    def _get_archivo_codigos_idema(self, archivo_salida):
-        url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_API_URL)
-        estaciones = self._get_request_data(url, todos=True)
-        data = {estacion['idema']: estacion['ubi'] for estacion in estaciones}
-        with open(archivo_salida, 'w') as f:
-            f.write(json.dumps(data, indent=4))
 
     def get_municipio(self, name):
         url = '{}{}'.format(BASE_URL, MUNICIPIOS_API_URL)
@@ -407,8 +407,7 @@ class AemetClient:
 
     def descargar_mapas_significativos(
             self, archivo_salida, fecha='',
-            ambito='esp', dia=MAPAS_SIGNIFICATIVOS_DIAS['D+0 (00-12)']
-    ):
+            ambito='esp', dia=MAPAS_SIGNIFICATIVOS_DIAS['D+0 (00-12)']):
         if fecha:
             url = '{}{}'.format(BASE_URL, MAPAS_SIGNIFICATIVOS_FECHA_API_URL.format(fecha, ambito, dia))
         else:
