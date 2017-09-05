@@ -228,19 +228,22 @@ class Municipio:
 
     @staticmethod
     def get_municipio(id):
-        print(id)
-        return Municipio()
+        municipio = list(filter(lambda m: id == '{}{}'.format(m['CPRO'], m['CMUN']), Municipio.MUNICIPIOS))[0]
+        return Municipio.load(municipio)
 
     @staticmethod
     def buscar(name):
-        municipio = list(filter(lambda t: name in t['NOMBRE'], Municipio.MUNICIPIOS))[0]
-        municipio = Municipio.load(municipio)
-        return municipio
+        try:
+            municipio = list(filter(lambda t: name in t['NOMBRE'], Municipio.MUNICIPIOS))[0]
+            municipio = Municipio.load(municipio)
+            return municipio
+        except:
+            return None
 
     def get_codigo(self):
         return '{}{}'.format(self.cpro, self.cmun)
 
-class AemetClient:
+class Aemet:
     def __init__(self, api_key=API_KEY, api_key_file='', verbose=False):
         if not api_key and not api_key_file:
             raise Exception('You must provide an API KEY')
@@ -444,5 +447,14 @@ class AemetClient:
         return self._download_image_from_url(url, archivo_salida)
 
 if __name__ == '__main__':
-    client = AemetClient(verbose=True)
-    print(client.get_prediccion_maritima(tipo='kjdbfkajsf', area='0'))
+    # client = Aemet(verbose=True)
+    # # print(client.get_prediccion_maritima(tipo='kjdbfkajsf', area='0'))
+    # print(Municipio.buscar('Fuenmayor').nombre)
+    client = Aemet()
+    municipio = Municipio.buscar('Logroño')
+    p = client.get_prediccion(municipio.get_codigo())
+    for dia in p.prediccion:
+        print(dia.fecha)
+        print('Máxima: {}'.format(dia.temperatura['maxima']))
+        print('Mínima: {}'.format(dia.temperatura['minima']))
+        print()
