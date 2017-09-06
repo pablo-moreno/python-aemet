@@ -9,32 +9,32 @@ try:
     API_KEY = open('data/api.key', 'r').read().strip()
 except:
     API_KEY = ''
-BASE_URL = 'https://opendata.aemet.es/opendata/api/'
-MUNICIPIOS_API_URL = 'maestro/municipios/'
-PREDICCION_SEMANAL_API_URL = 'prediccion/especifica/municipio/diaria/'
-PREDICCION_POR_HORAS_API_URL = 'prediccion/especifica/municipio/horaria/'
-PREDICCION_NORMALIZADA_API_URL = 'prediccion/{}/{}/{}'
-PREDICCION_MARITIMA_ALTA_MAR_API_URL = 'prediccion/maritima/altamar/area/{}'
-PREDICCION_MARITIMA_COSTERA_API_URL = 'prediccion/maritima/costera/costa/{}'
+BASE_URL = 'https://opendata.aemet.es/opendata/api'
+MUNICIPIOS_API_URL = BASE_URL + '/maestro/municipios/'
+PREDICCION_SEMANAL_API_URL = BASE_URL + '/prediccion/especifica/municipio/diaria/'
+PREDICCION_POR_HORAS_API_URL = BASE_URL + '/prediccion/especifica/municipio/horaria/'
+PREDICCION_NORMALIZADA_API_URL = BASE_URL + '/prediccion/{}/{}/{}'
+PREDICCION_MARITIMA_ALTA_MAR_API_URL = BASE_URL + '/prediccion/maritima/altamar/area/{}'
+PREDICCION_MARITIMA_COSTERA_API_URL = BASE_URL + '/prediccion/maritima/costera/costa/{}'
 TIPO_COSTERA, TIPO_ALTA_MAR = 'costera', 'altamar'
-OBSERVACION_CONVENCIONAL_API_URL = 'observacion/convencional/todas/'
-OBSERVACION_CONVENCIONAL_ESTACION_API_URL = 'observacion/convencional/datos/estacion/{}/'
-MAPA_RIESGO_INCENDIOS_ESTIMADO = 'incendios/mapasriesgo/estimado/area/{}'
-MAPA_RIESGO_INCENDIOS_PREVISTO = 'incendios/mapasriesgo/previsto/dia/{}/area/{}'
-MAPA_ANALISIS_API_URL = 'mapasygraficos/analisis/'
-MAPAS_SIGNIFICATIVOS_FECHA_API_URL = '/mapasygraficos/mapassignificativos/fecha/{}/{}/{}/'
-MAPAS_SIGNIFICATIVOS_API_URL = '/mapasygraficos/mapassignificativos/{}/{}/'
+OBSERVACION_CONVENCIONAL_API_URL = BASE_URL + '/observacion/convencional/todas/'
+OBSERVACION_CONVENCIONAL_ESTACION_API_URL = BASE_URL + 'observacion/convencional/datos/estacion/{}/'
+MAPA_RIESGO_INCENDIOS_ESTIMADO = BASE_URL + '/incendios/mapasriesgo/estimado/area/{}'
+MAPA_RIESGO_INCENDIOS_PREVISTO = BASE_URL + '/incendios/mapasriesgo/previsto/dia/{}/area/{}'
+MAPA_ANALISIS_API_URL = BASE_URL + '/mapasygraficos/analisis/'
+MAPAS_SIGNIFICATIVOS_FECHA_API_URL = BASE_URL + '/mapasygraficos/mapassignificativos/fecha/{}/{}/{}/'
+MAPAS_SIGNIFICATIVOS_API_URL = BASE_URL + '/mapasygraficos/mapassignificativos/{}/{}/'
 MAPAS_SIGNIFICATIVOS_DIAS = {
     'D+0 (00-12)': 'a', 'D+0 (12-24)': 'b',
     'D+1 (00-12)': 'c', 'D+1 (12-24)': 'd',
     'D+2 (00-12)': 'e', 'D+2 (12-24)': 'f'
 }
-MAPA_RAYOS_API_URL = 'red/rayos/mapa/'
-RADAR_NACIONAL_API_URL = 'red/radar/nacional'
-RADAR_REGIONAL_API_URL = 'red/radar/regional/{}'
-SATELITE_SST = 'satelites/producto/sst/'
-SATELITE_NVDI = 'satelites/producto/nvdi/'
-CONTAMINACION_FONDO_ESTACION_API_URL = 'red/especial/contaminacionfondo/estacion/{}/'
+MAPA_RAYOS_API_URL = BASE_URL + '/red/rayos/mapa/'
+RADAR_NACIONAL_API_URL = BASE_URL + '/red/radar/nacional'
+RADAR_REGIONAL_API_URL = BASE_URL + '/red/radar/regional/{}'
+SATELITE_SST = BASE_URL + '/satelites/producto/sst/'
+SATELITE_NVDI = BASE_URL + '/satelites/producto/nvdi/'
+CONTAMINACION_FONDO_ESTACION_API_URL = BASE_URL + '/red/especial/contaminacionfondo/estacion/{}/'
 PERIODO_SEMANA, PERIODO_DIA = 'PERIODO_SEMANA', 'PERIODO_DIA'
 INCENDIOS_MANANA, INCENDIOS_PASADO_MANANA, INCENDIOS_EN_3_DIAS = range(1, 4)
 PENINSULA, CANARIAS, BALEARES = 'p', 'c', 'b'
@@ -153,6 +153,38 @@ class PrediccionPorHoras:
                 pass
         return periodos
 
+class PrediccionMaritima:
+    def __init__(self, origen={}, aviso={}, situacion={}, prediccion={},
+            tendencia=[], id='', nombre='',tipo=TIPO_COSTERA):
+        self.origen = origen
+        self.aviso = aviso
+        self.situacion = situacion
+        self.prediccion = prediccion
+        self.tendencia = tendencia
+        self.id = id
+        self.nombre = nombre
+        self.tipo = tipo
+
+    @staticmethod
+    def load(data, tipo):
+        if tipo == TIPO_COSTERA:
+            aviso = data['aviso']
+            tendencia = data['tendencia']
+        else:
+            aviso = {}
+            tendencia = {}
+
+        return PrediccionMaritima(
+            origen=data['origen'],
+            aviso=aviso,
+            situacion=data['situacion'],
+            prediccion=data['prediccion'],
+            tendencia=tendencia,
+            id=data['id'],
+            nombre=data['nombre'],
+            tipo=tipo
+        )
+
 class Observacion:
     def __init__(self, idema, lon, lat, fint, prec, alt, vmax, vv, dv, dmax, ubi):
         self.idema = idema
@@ -258,6 +290,9 @@ class Aemet:
         self.verbose = verbose
 
     def _get_request_data(self, url, todos=False):
+        """
+        Returns the JSON formatted request data
+        """
         if self.verbose:
             print(url)
         r = requests.get(
@@ -278,6 +313,9 @@ class Aemet:
         }
 
     def _get_request_normalized_data(self, url):
+        """
+        Return the request raw content data
+        """
         if self.verbose:
             print(url)
         r = requests.get(
@@ -295,17 +333,29 @@ class Aemet:
         }
 
     def _get_fecha_hoy():
+        """
+        Devuelve la fecha formateada en el formato que acepta AEMET
+        """
         print(datetime.now())
         return '{:%Y-%m-%d}'.format(datetime.now())
 
     def _get_archivo_codigos_idema(self, archivo_salida):
-        url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_API_URL)
+        """
+        Crea un archivo json con todos los registros de estaciones de IDEMA
+        :param archivo_salida: Nombre del archivo de salida
+        """
+        url = OBSERVACION_CONVENCIONAL_API_URL
         estaciones = self._get_request_data(url, todos=True)
         data = {estacion['idema']: estacion['ubi'] for estacion in estaciones}
         with open(archivo_salida, 'w') as f:
             f.write(json.dumps(data, indent=4))
 
-    def _download_image_from_url(self, url, archivo_salida):
+    def _download_image_from_url(self, url, out_file):
+        """
+        Creates a new file with the content of the image response from an url
+        :param url: The URL
+        :param out_file: Image filename
+        """
         if self.verbose:
             print('Downloading from {}...'.format(url))
         try:
@@ -327,17 +377,18 @@ class Aemet:
             if error:
                 raise Exception(error)
             data = r.content
-            with open(archivo_salida, 'wb') as f:
+            with open(out_file, 'wb') as f:
                 f.write(data)
         except:
             return {'status': r.json()['estado']}
         return {
             'status': 200,
-            'archivo_salida': archivo_salida
+            'out_file': out_file
         }
 
     def get_municipio(self, name):
-        url = '{}{}'.format(BASE_URL, MUNICIPIOS_API_URL)
+        # TODO
+        url = MUNICIPIOS_API_URL
         r = requests.get(
             url,
             params = {
@@ -351,15 +402,19 @@ class Aemet:
         return data
 
     def get_prediccion(self, codigo_municipio, periodo=PERIODO_SEMANA):
+        """
+        Devuelve un objeto de la clase Prediccion dado un código de municipio y
+        un periodo de consulta.
+        :param codigo_municipio: Código del municipio
+        :param periodo: Periodo de tiempo a consultar, determinado por las constantes PERIODO_SEMANA (p.d.) y PERIODO_DIA
+        """
         if periodo == PERIODO_SEMANA:
-            url = '{}{}{}'.format(
-                BASE_URL,
+            url = '{}{}'.format(
                 PREDICCION_SEMANAL_API_URL,
                 codigo_municipio
             )
         else:
-            url = '{}{}{}'.format(
-                BASE_URL,
+            url = '{}{}'.format(
                 PREDICCION_POR_HORAS_API_URL,
                 codigo_municipio
             )
@@ -368,82 +423,133 @@ class Aemet:
 
     def get_prediccion_normalizada(self, ambito=NACIONAL, dia=HOY, ccaa='',
             provincia='', fecha_elaboracion=''):
+        """
+        Devuelve el texto elaborado por AEMET de la predicción meteorológica para
+        un determinado ámbito, día, Comunidad Autónoma, provincia y/o fecha de elaboración.
+        :param ambito: Ámbito a consultar para la predicción (Constantes NACIONAL (p.d.), CCAA, PROVINCIA)
+        :param dia: Día a consultar (Constantes HOY (p.d.), MANANA, PASADO_MANANA)
+        :param ccaa: ID de la Comunidad Autónoma
+        :param provincia: ID de la provincia
+        """
         if ccaa and provincia:
             raise Exception('You cannot set "provincia" and "ccaa" at the same time')
         if (ccaa or provincia) and ambito == NACIONAL:
             raise Exception('You cannot specify "provincia" or "ccaa" when you set "ambito=NACIONAL"')
-        url = '{}{}'.format(BASE_URL, PREDICCION_NORMALIZADA_API_URL.format(ambito, dia, ccaa + provincia))
+        url = PREDICCION_NORMALIZADA_API_URL.format(ambito, dia, ccaa + provincia)
         if fecha_elaboracion:
             url += 'elaboracion/{}/'.format(fecha_elaboracion)
         return self._get_request_normalized_data(url)
 
     def get_observacion_convencional(self, estacion=''):
+        """
+        Devuelve un objeto de la clase Observacion con los datos de la consulta
+        sobre una estación
+        :param estacion: [Opcional] Id de la estación a consultar. Por defecto, estación de Madrid
+        """
         if estacion:
-            url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_ESTACION_API_URL.format(estacion))
+            url = OBSERVACION_CONVENCIONAL_ESTACION_API_URL.format(estacion)
             return Observacion.load(self._get_request_data(url))
         else:
-            url = '{}{}'.format(BASE_URL, OBSERVACION_CONVENCIONAL_API_URL)
+            url = OBSERVACION_CONVENCIONAL_API_URL
             return Observacion.load(self._get_request_data(url, todos=True), multiple=True)
 
     def get_contaminacion_fondo(self, estacion):
-        url = '{}{}'.format(BASE_URL, CONTAMINACION_FONDO_ESTACION_API_URL.format(estacion))
+        # TODO
+        url = CONTAMINACION_FONDO_ESTACION_API_URL.format(estacion)
         data = self._get_request_normalized_data(url).splitlines()
         return data
 
     def get_prediccion_maritima(self, tipo=TIPO_COSTERA, costa='', area=''):
+        """
+        Devuelve un objeto de la clase PrediccionMaritima dado un tipo de predicción
+        (TIPO_COSTERA por defecto o TIPO_ALTA_MAR) y un valor de costa o un valor de área
+        :param tipo: Si es de COSTA o de ALTA MAR (definidos por las constantes TIPO_COSTERA y TIPO_ALTA_MAR)
+        :param costa: Id de la costa
+        :param area: Id del área
+        """
         if tipo == TIPO_COSTERA:
             if not costa:
                 raise Exception('You must provide a "costa" value')
-            url = '{}{}'.format(BASE_URL, PREDICCION_MARITIMA_COSTERA_API_URL.format(costa))
+            url = PREDICCION_MARITIMA_COSTERA_API_URL.format(costa)
         elif tipo == TIPO_ALTA_MAR:
             if not area:
                 raise Exception('You must provide an "area" value')
-            url = '{}{}'.format(BASE_URL, PREDICCION_MARITIMA_ALTA_MAR_API_URL.format(area))
+            url = PREDICCION_MARITIMA_ALTA_MAR_API_URL.format(area)
         else:
             raise Exception('Error: "tipo" value not valid')
 
-        return self._get_request_data(url)
+        return PrediccionMaritima.load(self._get_request_data(url), tipo)
 
     def descargar_mapa_analisis(self, archivo_salida):
-        url = '{}{}'.format(BASE_URL, MAPA_ANALISIS_API_URL)
+        """
+        Descarga una imagen con el mapa de análisis
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        """
+        url = MAPA_ANALISIS_API_URL
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapas_significativos(
             self, archivo_salida, fecha='',
             ambito='esp', dia=MAPAS_SIGNIFICATIVOS_DIAS['D+0 (00-12)']):
+        """
+        Descarga una imagen con los mapas significativos
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        :param ambito: Código de Comunidad Autónoma o de España
+        :param dia: Código para fecha determinada [a, b, c, d, e, f]
+        Ver MAPAS_SIGNIFICATIVOS_DIAS
+        """
         if fecha:
-            url = '{}{}'.format(BASE_URL, MAPAS_SIGNIFICATIVOS_FECHA_API_URL.format(fecha, ambito, dia))
+            url = MAPAS_SIGNIFICATIVOS_FECHA_API_URL.format(fecha, ambito, dia)
         else:
-            url = '{}{}'.format(BASE_URL, MAPAS_SIGNIFICATIVOS_API_URL.format(ambito, dia))
+            url = MAPAS_SIGNIFICATIVOS_API_URL.format(ambito, dia)
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapa_riesgo_previsto_incendio(
             self, archivo_salida, dia=INCENDIOS_MANANA, area=PENINSULA):
-        url = '{}{}'.format(BASE_URL, MAPA_RIESGO_INCENDIOS_PREVISTO.format(dia, area))
+        """
+        Descarga una imagen con el mapa del riesgo previsto de incendio
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        :param area: [Opcional] Área consultada (PENINSULA, BALEARES o CANARIAS)
+        """
+        url = MAPA_RIESGO_INCENDIOS_PREVISTO.format(dia, area)
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapa_riesgo_estimado_incendio(self, archivo_salida, area=PENINSULA):
-        url = '{}{}'.format(BASE_URL, MAPA_RIESGO_INCENDIOS_ESTIMADO.format(area))
+        """
+        Descarga una imagen con el mapa del riesgo estimado de incendio
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        :param area: [Opcional] Área consultada (PENINSULA, BALEARES o CANARIAS)
+        """
+        url = MAPA_RIESGO_INCENDIOS_ESTIMADO.format(area)
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapa_radar_nacional(self, archivo_salida):
-        url = '{}{}'.format(BASE_URL, RADAR_NACIONAL_API_URL)
+        """
+        Descarga una imagen con el mapa del radar por región
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        """
+        url = RADAR_NACIONAL_API_URL
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapa_radar_regional(self, archivo_salida, region):
-        url = '{}{}'.format(BASE_URL, RADAR_REGIONAL_API_URL.format(region))
+        """
+        Descarga una imagen con el mapa del radar por región
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        :param region: Región consultada
+        """
+        url = RADAR_REGIONAL_API_URL.format(region)
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapa_rayos(self, archivo_salida):
-        url = '{}{}'.format(BASE_URL, MAPA_RAYOS_API_URL)
+        url = MAPA_RAYOS_API_URL
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapa_satelite_sst(self, archivo_salida):
-        url = '{}{}'.format(BASE_URL, SATELITE_SST)
+        url = SATELITE_SST
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapa_satelite_nvdi(self, archivo_salida):
-        url = '{}{}'.format(BASE_URL, SATELITE_NVDI)
+        url = SATELITE_NVDI
         return self._download_image_from_url(url, archivo_salida)
 
 if __name__ == '__main__':
@@ -451,10 +557,5 @@ if __name__ == '__main__':
     # # print(client.get_prediccion_maritima(tipo='kjdbfkajsf', area='0'))
     # print(Municipio.buscar('Fuenmayor').nombre)
     client = Aemet()
-    municipio = Municipio.buscar('Logroño')
-    p = client.get_prediccion(municipio.get_codigo())
-    for dia in p.prediccion:
-        print(dia.fecha)
-        print('Máxima: {}'.format(dia.temperatura['maxima']))
-        print('Mínima: {}'.format(dia.temperatura['minima']))
-        print()
+    pm = client.get_prediccion_maritima(TIPO_ALTA_MAR, area='0')
+    print(pm.prediccion)
