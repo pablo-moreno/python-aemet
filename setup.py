@@ -70,6 +70,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
+    include_package_data=True,
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
@@ -99,4 +100,16 @@ setup(
             'aemet=aemet:main',
         ],
     },
+    data_files=[(
+        'aemet/data', [
+            'data/cod_ccaa.json',
+            'data/cod_ccaa.csv',
+            'data/cod_costas.json',
+            'data/cod_costas.csv',
+            'data/cods_idema.json',
+            'data/municipios.json',
+            'data/municipios.csv',
+
+        ]
+    )]
 )

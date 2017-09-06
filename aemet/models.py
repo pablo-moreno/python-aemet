@@ -1,3 +1,4 @@
+import os
 import requests
 import csv
 import json
@@ -5,8 +6,9 @@ import urllib3
 from datetime import datetime
 
 # Constants
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 try:
-    API_KEY = open('data/api.key', 'r').read().strip()
+    API_KEY = open(os.path.join(BASE_DIR, 'data', 'api.key'), 'r').read().strip()
 except:
     API_KEY = ''
 BASE_URL = 'https://opendata.aemet.es/opendata/api'
@@ -238,7 +240,7 @@ class Observacion:
         )
 
 class Municipio:
-    with open('data/municipios.json') as f:
+    with open(os.path.join(BASE_DIR, 'data','municipios.json')) as f:
         MUNICIPIOS = json.loads(f.read())
 
     def __init__(self, cod_auto, cpro, cmun, dc, nombre):
