@@ -74,6 +74,15 @@ class Prediccion:
             nombre=data['nombre']
         )
 
+    def ver(self):
+        print('Provincia: {}'.format(self.provincia))
+        print('Versión: {}'.format(self.version))
+        print('ID: {}'.format(self.id))
+        print('Origen: {}'.format(self.origen))
+        print('Elaborado: {}'.format(self.elaborado))
+        print('Predicción: {}'.format(self.prediccion[0].ver()))
+        print('Nombre: {}'.format(self.nombre))
+
 class PrediccionDia:
     def __init__(self, uvMax=0, rachaMax=[], fecha='', sensTermica=[], humedadRelativa=[],
             temperatura=[], estadoCielo=[], cotaNieveProv=[], viento=[], probPrecipitacion=[]):
@@ -110,6 +119,17 @@ class PrediccionDia:
                 )
             )
         return predicciones
+
+    def ver(self):
+        print('UV Máx.: {}'.format(self.uvMax))
+        print('Racha Máxima: {}'.format(self.rachaMax))
+        print('Fecha: {}'.format(self.fecha))
+        print('Sensación térmica: {}'.format(self.sensTermica))
+        print('Humedad relativa: {}'.format(self.humedadRelativa))
+        print('Temperatura: {}'.format(self.temperatura))
+        print('Cota de nieve: {}'.format(self.cotaNieveProv))
+        print('Viento: {}'.format(self.viento))
+        print('Probabilidad de precipitación: {}'.format(self.probPrecipitacion))
 
 class PrediccionPorHoras:
     def __init__(self, estadoCielo=[], precipitacion=[], vientoAndRachaMax=[], ocaso='',
@@ -543,14 +563,26 @@ class Aemet:
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapa_rayos(self, archivo_salida):
+        """
+        Descarga una imagen con el mapa de rayos a nivel nacional
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        """
         url = MAPA_RAYOS_API_URL
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapa_satelite_sst(self, archivo_salida):
+        """
+        Descarga una imagen con el mapa del satélite (SST)
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        """
         url = SATELITE_SST
         return self._download_image_from_url(url, archivo_salida)
 
     def descargar_mapa_satelite_nvdi(self, archivo_salida):
+        """
+        Descarga una imagen con el mapa del satélite (NVDI)
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        """
         url = SATELITE_NVDI
         return self._download_image_from_url(url, archivo_salida)
 
@@ -559,5 +591,5 @@ if __name__ == '__main__':
     # # print(client.get_prediccion_maritima(tipo='kjdbfkajsf', area='0'))
     # print(Municipio.buscar('Fuenmayor').nombre)
     client = Aemet()
-    pm = client.get_prediccion_maritima(TIPO_ALTA_MAR, area='0')
-    print(pm.prediccion)
+    pm = client.get_prediccion('26064')
+    pm.ver()
