@@ -4,11 +4,13 @@ import csv
 import json
 import urllib3
 from datetime import datetime
+from pathlib import Path
 
 # Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+API_KEY_FILE = os.path.join(str(Path.home()), '.aemet', 'api.key')
 try:
-    API_KEY = open(os.path.join(BASE_DIR, 'data', 'api.key'), 'r').read().strip()
+    API_KEY = open(API_KEY_FILE, 'r').read().strip()
 except:
     API_KEY = ''
 BASE_URL = 'https://opendata.aemet.es/opendata/api'
@@ -311,6 +313,16 @@ class Aemet:
         self.headers = {}
         self.verbose = verbose
 
+    @staticmethod
+    def guardar_clave_api():
+        api_key = input('Escriba su clave de API: ')
+        if not api_key:
+            raise Exception('La clave de API no puede estar vacía')
+        with open(API_KEY_FILE, 'w') as f:
+            f.write(api_key)
+        print('Clave de API almacenada en {}'.format(API_KEY_FILE))
+
+
     def _get_request_data(self, url, todos=False):
         """
         Returns the JSON formatted request data
@@ -587,9 +599,6 @@ class Aemet:
         return self._download_image_from_url(url, archivo_salida)
 
 if __name__ == '__main__':
-    # client = Aemet(verbose=True)
-    # # print(client.get_prediccion_maritima(tipo='kjdbfkajsf', area='0'))
-    # print(Municipio.buscar('Fuenmayor').nombre)
     client = Aemet()
-    pm = client.get_prediccion('26064')
-    pm.ver()
+    municipio = Municipio.buscar('Logroño')
+    print(client.get_contaminacion_fondo(estacion='11'))

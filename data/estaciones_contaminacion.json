@@ -1,0 +1,50 @@
+[
+    {
+        "codigo": "10",
+        "estacion": "Cabo de Creus (Girona)"
+    },
+    {
+        "codigo": "09",
+        "estacion": "Campis\u00e1balos (Guadalajara)"
+    },
+    {
+        "codigo": "17",
+        "estacion": "Do\u00f1ana (Huelva)"
+    },
+    {
+        "codigo": "14",
+        "estacion": "Els Torms (Lleida)"
+    },
+    {
+        "codigo": "06",
+        "estacion": "Mah\u00f3n (Illes Balears)"
+    },
+    {
+        "codigo": "08",
+        "estacion": "Niembro-Llanes (Asturias)"
+    },
+    {
+        "codigo": "05",
+        "estacion": "Noia (A Coru\u00f1a)"
+    },
+    {
+        "codigo": "16",
+        "estacion": "O Savi\u00f1ao (Lugo)"
+    },
+    {
+        "codigo": "13",
+        "estacion": "Pe\u00f1ausende (Zamora)"
+    },
+    {
+        "codigo": "01",
+        "estacion": "San Pablo de los Montes (Toledo)"
+    },
+    {
+        "codigo": "07",
+        "estacion": "V\u00edznar (Granada)"
+    },
+    {
+        "codigo": "12",
+        "estacion": "Zarra (Valencia)"
+    }
+]

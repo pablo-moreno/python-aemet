@@ -109,6 +109,8 @@ setup(
             'data/cods_idema.json',
             'data/municipios.json',
             'data/municipios.csv',
+            'data/estaciones_contaminacion.json',
+            'data/estaciones_contaminacion.csv',
 
         ]
     )]
