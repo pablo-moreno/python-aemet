@@ -23,6 +23,7 @@ PREDICCION_MARITIMA_COSTERA_API_URL = BASE_URL + '/prediccion/maritima/costera/c
 ESTACIONES_EMA_API_URL = BASE_URL + '/valores/climatologicos/inventarioestaciones/todasestaciones'
 VALORES_CLIMATOLOGICOS_NORMALES = BASE_URL + '/valores/climatologicos/normales/estacion/{}'
 VALORES_CLIMATOLOGICOS_EXTREMOS = BASE_URL + '/valores/climatologicos/valoresextremos/parametro/{}/estacion/{}'
+VALORES_CLIMATOLOGICOS_MENSUALES = BASE_URL + '/valores/climatologicos/mensualesanuales/datos/anioini/{}/aniofin/{}/estacion/{}'
 VCP, VCT, VCV = 'P', 'T', 'V'
 TIPO_COSTERA, TIPO_ALTA_MAR = 'costera', 'altamar'
 OBSERVACION_CONVENCIONAL_API_URL = BASE_URL + '/observacion/convencional/todas/'
@@ -321,7 +322,7 @@ class Aemet:
         if not api_key and not api_key_file:
             raise Exception('You must provide an API KEY')
         if api_key_file:
-            with open('api_key_file') as f:
+            with open(api_key_file) as f:
                 api_key = f.read().strip()
         self.api_key = api_key
         self.querystring = {
@@ -338,7 +339,6 @@ class Aemet:
         with open(API_KEY_FILE, 'w') as f:
             f.write(api_key)
         print('Clave de API almacenada en {}'.format(API_KEY_FILE))
-
 
     def _get_request_data(self, url, todos=False):
         """
@@ -537,6 +537,13 @@ class Aemet:
             url = OBSERVACION_CONVENCIONAL_API_URL
             return Observacion.load(self._get_request_data(url, todos=True), multiple=True)
 
+    def get_valores_climatologicos_mensuales(self, anyo, estacion):
+        """
+        Devuelve un diccionario con la información de todas las estaciones
+        """
+        url = VALORES_CLIMATOLOGICOS_MENSUALES.format(anyo, anyo, estacion)
+        return self._get_request_data(url)
+
     def get_contaminacion_fondo(self, estacion):
         # TODO
         url = CONTAMINACION_FONDO_ESTACION_API_URL.format(estacion)
@@ -667,7 +674,7 @@ class Aemet:
         return self._download_image_from_url(url, archivo_salida)
 
 if __name__ == '__main__':
-    client = Aemet(verbose=True)
+    aemet = Aemet(verbose=True)
     municipio = Municipio.buscar('Logroño')
-    estaciones = client.buscar_estacion('Logroño')
-    print(estaciones[0])
+    estaciones = aemet.buscar_estacion('Logroño')
+    vce = aemet.get_valores_climatologicos_mensuales(2017, estaciones[0].indicativo)
