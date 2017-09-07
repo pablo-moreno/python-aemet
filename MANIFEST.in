@@ -1,5 +1,7 @@
 # Include the license file
 include LICENSE.txt
+include README.rst
+include description.txt
 
 # Include the data files
 recursive-include data *

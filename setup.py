@@ -24,12 +24,12 @@ with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
     requirements = f.read().splitlines()
 
 setup(
-    name='aemet',
+    name='python-aemet',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.17.9.07.dev',
+    version='0.17.9.08.dev',
 
     description=description,
     long_description=long_description,
@@ -42,7 +42,7 @@ setup(
     author_email='pablomoreno.inf@gmail.com',
 
     # Choose your license
-    license='MIT',
+    license='GNU GPLv3',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -66,7 +66,7 @@ setup(
     ],
 
     # What does your project relate to?
-    keywords='aemet',
+    keywords='aemet weather api spain opendata',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
@@ -111,7 +111,6 @@ setup(
             'data/municipios.csv',
             'data/estaciones_contaminacion.json',
             'data/estaciones_contaminacion.csv',
-
         ]
     )]
 )
