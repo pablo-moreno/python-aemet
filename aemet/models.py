@@ -20,6 +20,10 @@ PREDICCION_POR_HORAS_API_URL = BASE_URL + '/prediccion/especifica/municipio/hora
 PREDICCION_NORMALIZADA_API_URL = BASE_URL + '/prediccion/{}/{}/{}'
 PREDICCION_MARITIMA_ALTA_MAR_API_URL = BASE_URL + '/prediccion/maritima/altamar/area/{}'
 PREDICCION_MARITIMA_COSTERA_API_URL = BASE_URL + '/prediccion/maritima/costera/costa/{}'
+ESTACIONES_EMA_API_URL = BASE_URL + '/valores/climatologicos/inventarioestaciones/todasestaciones'
+VALORES_CLIMATOLOGICOS_NORMALES = BASE_URL + '/valores/climatologicos/normales/estacion/{}'
+VALORES_CLIMATOLOGICOS_EXTREMOS = BASE_URL + '/valores/climatologicos/valoresextremos/parametro/{}/estacion/{}'
+VCP, VCT, VCV = 'P', 'T', 'V'
 TIPO_COSTERA, TIPO_ALTA_MAR = 'costera', 'altamar'
 OBSERVACION_CONVENCIONAL_API_URL = BASE_URL + '/observacion/convencional/todas/'
 OBSERVACION_CONVENCIONAL_ESTACION_API_URL = BASE_URL + 'observacion/convencional/datos/estacion/{}/'
@@ -299,6 +303,19 @@ class Municipio:
     def get_codigo(self):
         return '{}{}'.format(self.cpro, self.cmun)
 
+class Estacion:
+    def __init__(self, altitud, indicativo, provincia, longitud, nombre, latitud, indsinop):
+        self.altitud = altitud
+        self.indicativo = indicativo
+        self.provincia = provincia
+        self.longitud = longitud
+        self.nombre = nombre
+        self.latitud = latitud
+        self.indsinop = indsinop
+
+    def __str__(self):
+        return 'Nombre: {}'.format(self.nombre)
+
 class Aemet:
     def __init__(self, api_key=API_KEY, api_key_file='', verbose=False):
         if not api_key and not api_key_file:
@@ -340,7 +357,10 @@ class Aemet:
             if todos:
                 data = r.json()
             else:
-                data = r.json()[0]
+                try:
+                    data = r.json()[0]
+                except:
+                    return r.json()
             return data
         return {
             'error': r.status_code
@@ -435,6 +455,36 @@ class Aemet:
         data = r.json()
         return data
 
+    def get_estaciones(self):
+        """
+        Devuelve un diccionario con la información de todas las estaciones
+        """
+        url = ESTACIONES_EMA_API_URL
+        return self._get_request_data(url, todos=True)
+
+    def buscar_estacion(self, nombre):
+        """
+        Devuelve un diccionario con la información de la estación pasado su nombre por parámetro
+        :param nombre: Nombre de la estación
+        """
+        nombre = nombre.upper()
+        estaciones = self.get_estaciones()
+        estaciones = list(filter(lambda e: nombre in e['nombre'], estaciones))
+        result = []
+        for estacion in estaciones:
+            result.append(
+                Estacion(
+                    altitud=estacion['altitud'],
+                    indicativo=estacion['indicativo'],
+                    provincia=estacion['provincia'],
+                    longitud=estacion['longitud'],
+                    nombre=estacion['nombre'],
+                    latitud=estacion['latitud'],
+                    indsinop=estacion['indsinop']
+                )
+            )
+        return result
+
     def get_prediccion(self, codigo_municipio, periodo=PERIODO_SEMANA):
         """
         Devuelve un objeto de la clase Prediccion dado un código de municipio y
@@ -513,6 +563,24 @@ class Aemet:
             raise Exception('Error: "tipo" value not valid')
 
         return PrediccionMaritima.load(self._get_request_data(url), tipo)
+
+    def get_valores_climatologicos_normales(self, estacion='9170'):
+        """
+        Valores climatológicos normales (periodo 1981-2010) para la estación pasada por parámetro.
+        Periodicidad: 1 vez al día.
+        :param estacion: ID de la estación de IDEMA
+        """
+        url = VALORES_CLIMATOLOGICOS_NORMALES.format(estacion)
+        return self._get_request_data(url)
+
+    def get_valores_climatologicos_extremos(self, estacion='9170', parametro=VCP):
+        """
+        Valores extremos para la estación y la variable (precipitación, temperatura y viento) pasadas por parámetro.
+        Periodicidad: 1 vez al día.
+        :param estacion: ID de la estación de IDEMA
+        """
+        url = VALORES_CLIMATOLOGICOS_EXTREMOS.format(parametro, estacion)
+        return self._get_request_data(url)
 
     def descargar_mapa_analisis(self, archivo_salida):
         """
@@ -599,6 +667,7 @@ class Aemet:
         return self._download_image_from_url(url, archivo_salida)
 
 if __name__ == '__main__':
-    client = Aemet()
+    client = Aemet(verbose=True)
     municipio = Municipio.buscar('Logroño')
-    print(client.get_contaminacion_fondo(estacion='11'))
+    estaciones = client.buscar_estacion('Logroño')
+    print(estaciones[0])
