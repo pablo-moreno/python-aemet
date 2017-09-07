@@ -138,6 +138,12 @@ class PrediccionDia:
         print('Viento: {}'.format(self.viento))
         print('Probabilidad de precipitación: {}'.format(self.probPrecipitacion))
 
+    def get_temperatura_maxima(self):
+        return self.temperatura['maxima']
+
+    def get_temperatura_minima(self):
+        return self.temperatura['minima']
+
 class PrediccionPorHoras:
     def __init__(self, estadoCielo=[], precipitacion=[], vientoAndRachaMax=[], ocaso='',
             probTormenta=[], probPrecipitacion=[], orto='', humedadRelativa=[], nieve=[],
@@ -317,6 +323,38 @@ class Estacion:
     def __str__(self):
         return 'Nombre: {}'.format(self.nombre)
 
+    @staticmethod
+    def get_estaciones():
+        """
+        Devuelve un diccionario con la información de todas las estaciones
+        """
+        url = ESTACIONES_EMA_API_URL
+        return Aemet()._get_request_data(url, todos=True)
+
+    @staticmethod
+    def buscar_estacion(nombre):
+        """
+        Devuelve un diccionario con la información de la estación pasado su nombre por parámetro
+        :param nombre: Nombre de la estación
+        """
+        nombre = nombre.upper()
+        estaciones = Estacion.get_estaciones()
+        estaciones = list(filter(lambda e: nombre in e['nombre'], estaciones))
+        result = []
+        for estacion in estaciones:
+            result.append(
+                Estacion(
+                    altitud=estacion['altitud'],
+                    indicativo=estacion['indicativo'],
+                    provincia=estacion['provincia'],
+                    longitud=estacion['longitud'],
+                    nombre=estacion['nombre'],
+                    latitud=estacion['latitud'],
+                    indsinop=estacion['indsinop']
+                )
+            )
+        return result
+
 class Aemet:
     def __init__(self, api_key=API_KEY, api_key_file='', verbose=False):
         if not api_key and not api_key_file:
@@ -455,36 +493,6 @@ class Aemet:
         data = r.json()
         return data
 
-    def get_estaciones(self):
-        """
-        Devuelve un diccionario con la información de todas las estaciones
-        """
-        url = ESTACIONES_EMA_API_URL
-        return self._get_request_data(url, todos=True)
-
-    def buscar_estacion(self, nombre):
-        """
-        Devuelve un diccionario con la información de la estación pasado su nombre por parámetro
-        :param nombre: Nombre de la estación
-        """
-        nombre = nombre.upper()
-        estaciones = self.get_estaciones()
-        estaciones = list(filter(lambda e: nombre in e['nombre'], estaciones))
-        result = []
-        for estacion in estaciones:
-            result.append(
-                Estacion(
-                    altitud=estacion['altitud'],
-                    indicativo=estacion['indicativo'],
-                    provincia=estacion['provincia'],
-                    longitud=estacion['longitud'],
-                    nombre=estacion['nombre'],
-                    latitud=estacion['latitud'],
-                    indsinop=estacion['indsinop']
-                )
-            )
-        return result
-
     def get_prediccion(self, codigo_municipio, periodo=PERIODO_SEMANA):
         """
         Devuelve un objeto de la clase Prediccion dado un código de municipio y
@@ -571,7 +579,7 @@ class Aemet:
 
         return PrediccionMaritima.load(self._get_request_data(url), tipo)
 
-    def get_valores_climatologicos_normales(self, estacion='9170'):
+    def get_valores_climatologicos_normales(self, estacion):
         """
         Valores climatológicos normales (periodo 1981-2010) para la estación pasada por parámetro.
         Periodicidad: 1 vez al día.
@@ -580,7 +588,7 @@ class Aemet:
         url = VALORES_CLIMATOLOGICOS_NORMALES.format(estacion)
         return self._get_request_data(url)
 
-    def get_valores_climatologicos_extremos(self, estacion='9170', parametro=VCP):
+    def get_valores_climatologicos_extremos(self, estacion, parametro=VCP):
         """
         Valores extremos para la estación y la variable (precipitación, temperatura y viento) pasadas por parámetro.
         Periodicidad: 1 vez al día.
@@ -674,7 +682,13 @@ class Aemet:
         return self._download_image_from_url(url, archivo_salida)
 
 if __name__ == '__main__':
-    aemet = Aemet(verbose=True)
+    aemet = Aemet()
     municipio = Municipio.buscar('Logroño')
-    estaciones = aemet.buscar_estacion('Logroño')
-    vce = aemet.get_valores_climatologicos_mensuales(2017, estaciones[0].indicativo)
+    prediccion = aemet.get_prediccion(municipio.get_codigo())
+    for dia in prediccion.prediccion:
+        print(dia.fecha)
+        print(dia.get_temperatura_maxima())
+        print(dia.get_temperatura_minima())
+    estaciones = Estacion.buscar_estacion('Logroño')
+    logrono = estaciones[0]
+    print(logrono)
