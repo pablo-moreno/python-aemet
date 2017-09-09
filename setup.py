@@ -1,6 +1,5 @@
 """
 Python AEMET Library
-
 See:
 https://packaging.python.org/en/latest/distributing.html
 """
@@ -10,7 +9,6 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
-
 here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'description.txt'), encoding='utf-8') as f:
@@ -29,7 +27,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.17.9.08.dev',
+    version='0.0.1.dev',
 
     description=description,
     long_description=long_description,
@@ -102,15 +100,28 @@ setup(
     },
     data_files=[(
         'aemet/data', [
-            'data/cod_ccaa.json',
-            'data/cod_ccaa.csv',
-            'data/cod_costas.json',
-            'data/cod_costas.csv',
-            'data/cods_idema.json',
-            'data/municipios.json',
-            'data/municipios.csv',
-            'data/estaciones_contaminacion.json',
-            'data/estaciones_contaminacion.csv',
+            'aemet/data/cod_ccaa.json',
+            'aemet/data/cod_ccaa.csv',
+            'aemet/data/cod_costas.json',
+            'aemet/data/cod_costas.csv',
+            'aemet/data/cods_idema.json',
+            'aemet/data/municipios.json',
+            'aemet/data/municipios.csv',
+            'aemet/data/estaciones_contaminacion.json',
+            'aemet/data/estaciones_contaminacion.csv',
         ]
-    )]
+    )],
+    package_data={
+        'aemet/data': [
+            'aemet/data/cod_ccaa.json',
+            'aemet/data/cod_ccaa.csv',
+            'aemet/data/cod_costas.json',
+            'aemet/data/cod_costas.csv',
+            'aemet/data/cods_idema.json',
+            'aemet/data/municipios.json',
+            'aemet/data/municipios.csv',
+            'aemet/data/estaciones_contaminacion.json',
+            'aemet/data/estaciones_contaminacion.csv',
+        ]
+    }
 )

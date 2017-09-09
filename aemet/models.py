@@ -8,7 +8,12 @@ from pathlib import Path
 
 # Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-API_KEY_FILE = os.path.join(str(Path.home()), '.aemet', 'api.key')
+HOME_DIR = str(Path.home())
+AEMET_DIR = os.path.join(HOME_DIR, '.aemet')
+if not os.path.exists(AEMET_DIR):
+    print('Creando directorio ~/.aemet')
+    os.mkdir(os.path.join(HOME_DIR, '.aemet'))
+API_KEY_FILE = os.path.join(HOME_DIR, '.aemet', 'api.key')
 try:
     API_KEY = open(API_KEY_FILE, 'r').read().strip()
 except:
@@ -374,6 +379,7 @@ class Aemet:
         api_key = input('Escriba su clave de API: ')
         if not api_key:
             raise Exception('La clave de API no puede estar vacía')
+        API_KEY = api_key
         with open(API_KEY_FILE, 'w') as f:
             f.write(api_key)
         print('Clave de API almacenada en {}'.format(API_KEY_FILE))

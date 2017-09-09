@@ -1,7 +1,8 @@
 # Include the license file
-include LICENSE.txt
+include LICENSE
 include README.rst
 include description.txt
+include requirements.txt
 
 # Include the data files
-recursive-include data *
+recursive-include aemet/data *

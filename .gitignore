@@ -101,7 +101,7 @@ ENV/
 # project specifics
 api.key
 test.json
-/aemet/data
+# /aemet/data
 *.jpg
 
 .pypirc
