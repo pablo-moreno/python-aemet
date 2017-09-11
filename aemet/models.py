@@ -4,66 +4,7 @@ import csv
 import json
 import urllib3
 from datetime import datetime
-from pathlib import Path
-
-# Constants
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-HOME_DIR = str(Path.home())
-AEMET_DIR = os.path.join(HOME_DIR, '.aemet')
-
-if not os.path.exists(AEMET_DIR):
-    # Create ~/.aemet config dir
-    os.mkdir(os.path.join(HOME_DIR, '.aemet'))
-API_KEY_FILE = os.path.join(HOME_DIR, '.aemet', 'api.key')
-try:
-    API_KEY = open(API_KEY_FILE, 'r').read().strip()
-except:
-    API_KEY = ''
-print(API_KEY)
-# Endpoints
-BASE_URL = 'https://opendata.aemet.es/opendata/api'
-MUNICIPIOS_API_URL = BASE_URL + '/maestro/municipios/'
-PREDICCION_SEMANAL_API_URL = BASE_URL + '/prediccion/especifica/municipio/diaria/'
-PREDICCION_POR_HORAS_API_URL = BASE_URL + '/prediccion/especifica/municipio/horaria/'
-PREDICCION_NORMALIZADA_API_URL = BASE_URL + '/prediccion/{}/{}/{}'
-PREDICCION_MARITIMA_ALTA_MAR_API_URL = BASE_URL + '/prediccion/maritima/altamar/area/{}'
-PREDICCION_MARITIMA_COSTERA_API_URL = BASE_URL + '/prediccion/maritima/costera/costa/{}'
-ESTACIONES_EMA_API_URL = BASE_URL + '/valores/climatologicos/inventarioestaciones/todasestaciones'
-VALORES_CLIMATOLOGICOS_NORMALES = BASE_URL + '/valores/climatologicos/normales/estacion/{}'
-VALORES_CLIMATOLOGICOS_EXTREMOS = BASE_URL + '/valores/climatologicos/valoresextremos/parametro/{}/estacion/{}'
-VALORES_CLIMATOLOGICOS_MENSUALES = BASE_URL + '/valores/climatologicos/mensualesanuales/datos/anioini/{}/aniofin/{}/estacion/{}'
-PRODUCTOS_CLIMATOLOGICOS_API_URL = BASE_URL + '/productos/climatologicos/balancehidrico/{}/{}/'
-RESUMEN_CLIMATOLOGICO_MENSUAL_API_URL = BASE_URL + '/productos/climatologicos/resumenclimatologico/nacional/{}/{}/'
-OBSERVACION_CONVENCIONAL_API_URL = BASE_URL + '/observacion/convencional/todas/'
-OBSERVACION_CONVENCIONAL_ESTACION_API_URL = BASE_URL + 'observacion/convencional/datos/estacion/{}/'
-MAPA_RIESGO_INCENDIOS_ESTIMADO = BASE_URL + '/incendios/mapasriesgo/estimado/area/{}'
-MAPA_RIESGO_INCENDIOS_PREVISTO = BASE_URL + '/incendios/mapasriesgo/previsto/dia/{}/area/{}'
-MAPA_ANALISIS_API_URL = BASE_URL + '/mapasygraficos/analisis/'
-MAPAS_SIGNIFICATIVOS_FECHA_API_URL = BASE_URL + '/mapasygraficos/mapassignificativos/fecha/{}/{}/{}/'
-MAPAS_SIGNIFICATIVOS_API_URL = BASE_URL + '/mapasygraficos/mapassignificativos/{}/{}/'
-MAPA_RAYOS_API_URL = BASE_URL + '/red/rayos/mapa/'
-RADAR_NACIONAL_API_URL = BASE_URL + '/red/radar/nacional'
-RADAR_REGIONAL_API_URL = BASE_URL + '/red/radar/regional/{}'
-SATELITE_SST = BASE_URL + '/satelites/producto/sst/'
-SATELITE_NVDI = BASE_URL + '/satelites/producto/nvdi/'
-CONTAMINACION_FONDO_ESTACION_API_URL = BASE_URL + '/red/especial/contaminacionfondo/estacion/{}/'
-
-# Params
-MAPAS_SIGNIFICATIVOS_DIAS = {
-    'HOY_0_12': 'a',
-    'HOY_12_24': 'b',
-    'MANANA_0_12': 'c',
-    'MANANA_12_24': 'd',
-    'PASADO_MANANA_0_12': 'e',
-    'PASADO_MANANA_12_24': 'f'
-}
-VCP, VCT, VCV = 'P', 'T', 'V'
-TIPO_COSTERA, TIPO_ALTA_MAR = 'costera', 'altamar'
-PERIODO_SEMANA, PERIODO_DIA = 'PERIODO_SEMANA', 'PERIODO_DIA'
-INCENDIOS_MANANA, INCENDIOS_PASADO_MANANA, INCENDIOS_EN_3_DIAS = range(1, 4)
-PENINSULA, CANARIAS, BALEARES = 'p', 'c', 'b'
-NACIONAL, CCAA, PROVINCIA = 'nacional', 'ccaa', 'provincia'
-HOY, MANANA, PASADO_MANANA, MEDIO_PLAZO, TENDENCIA = 'hoy', 'manana', 'pasadomanana', 'medioplazo', 'tendencia'
+from aemet.constants import *
 
 # Disable Insecure Request Warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -578,6 +519,49 @@ class Aemet:
             url += 'elaboracion/{}/'.format(fecha_elaboracion)
         return self._get_request_normalized_data(url)
 
+    def get_prediccion_especifica_montanya(self, area, dia=-1):
+        """
+        Predicción meteorológica para la zona montañosa que se pasa como parámetro
+        (area) con validez para el día (día). Periodicidad de actualización: continuamente
+        :param area: Área de consulta
+        :param dia: [Opcional] Día a consultar (0, +1, +2, +3)
+        """
+        if dia == -1:
+            url = PREDICCION_ESPECIFICA_MONTANYA_API_URL.format(area)
+        else:
+            url = PREDICCION_ESPECIFICA_MONTANYA_DIA_API_URL.format(area, dia)
+        return self._get_request_data(url)
+
+    def get_prediccion_nivologica(self, area):
+        """
+        Información nivológica para la zona montañosa que se pasa como parámetro (area)
+        :param area: Área de consulta (0: Pirineo Catalán 1: Pirineo Navarro y Aragonés)
+        """
+        if area != 0 and area != 1:
+            raise Exception('Error: Área no válida (0, 1)')
+        url = PREDICCION_NIVOLOGICA_API_URL.format(area)
+        return self._get_request_normalized_data(url)
+
+    def get_prediccion_especifica_playa(self, playa):
+        """
+        La predicción diaria de la playa que se pasa como parámetro.
+        Establece el estado de nubosidad para unas horas determinadas, las 11 y
+        las 17 hora oficial. Se analiza también si se espera precipitación en
+        el entorno de esas horas, entre las 08 y las 14 horas y entre las 14 y 20 horas.
+        :param playa: ID de la playa
+        """
+        url = PREDICCION_ESPECIFICA_PLAYA_API_URL.format(playa)
+        return self._get_request_data(url)
+
+    def get_prediccion_especifica_uvi(self, dia=0):
+        """
+        Predicción de Índice de radiación UV máximo en condiciones de cielo
+        despejado para el día seleccionado.
+        :param dia: Día de consulta (0, 1, 2, 3, 4)
+        """
+        url = PREDICCION_ESPECIFICA_UVI_API_URL.format(dia)
+        return self._get_request_normalized_data(url)
+
     def get_observacion_convencional(self, estacion=''):
         """
         Devuelve un objeto de la clase Observacion con los datos de la consulta
@@ -760,5 +744,5 @@ class Aemet:
         return self._download_file_from_url(url, archivo_salida)
 
 if __name__ == '__main__':
-    aemet = Aemet(verbose=True)
-    print(aemet.descargar_productos_climatologicos('resumen.pdf', 2017, 8))
+    aemet = Aemet()
+    print(aemet.get_prediccion_especifica_uvi(1))
