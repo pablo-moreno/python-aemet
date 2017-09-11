@@ -27,20 +27,20 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.0.1.dev',
+    version='0.0.4.dev',
 
     description=description,
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/pablius93/python-aemet',
+    url='https://github.com/pablo-moreno/python-aemet',
 
     # Author details
     author='Pablo Moreno',
     author_email='pablomoreno.inf@gmail.com',
 
     # Choose your license
-    license='GNU GPLv3',
+    license='MIT',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -56,6 +56,9 @@ setup(
 
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: MIT License',
+
+        # OS
+        'Operating System :: OS Independent',
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.

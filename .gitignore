@@ -103,6 +103,6 @@ api.key
 test.json
 # /aemet/data
 *.jpg
-
+*.pdf
 .pypirc
 # End of https://www.gitignore.io/api/python

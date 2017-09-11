@@ -10,14 +10,17 @@ from pathlib import Path
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HOME_DIR = str(Path.home())
 AEMET_DIR = os.path.join(HOME_DIR, '.aemet')
+
 if not os.path.exists(AEMET_DIR):
-    print('Creando directorio ~/.aemet')
+    # Create ~/.aemet config dir
     os.mkdir(os.path.join(HOME_DIR, '.aemet'))
 API_KEY_FILE = os.path.join(HOME_DIR, '.aemet', 'api.key')
 try:
     API_KEY = open(API_KEY_FILE, 'r').read().strip()
 except:
     API_KEY = ''
+print(API_KEY)
+# Endpoints
 BASE_URL = 'https://opendata.aemet.es/opendata/api'
 MUNICIPIOS_API_URL = BASE_URL + '/maestro/municipios/'
 PREDICCION_SEMANAL_API_URL = BASE_URL + '/prediccion/especifica/municipio/diaria/'
@@ -29,8 +32,8 @@ ESTACIONES_EMA_API_URL = BASE_URL + '/valores/climatologicos/inventarioestacione
 VALORES_CLIMATOLOGICOS_NORMALES = BASE_URL + '/valores/climatologicos/normales/estacion/{}'
 VALORES_CLIMATOLOGICOS_EXTREMOS = BASE_URL + '/valores/climatologicos/valoresextremos/parametro/{}/estacion/{}'
 VALORES_CLIMATOLOGICOS_MENSUALES = BASE_URL + '/valores/climatologicos/mensualesanuales/datos/anioini/{}/aniofin/{}/estacion/{}'
-VCP, VCT, VCV = 'P', 'T', 'V'
-TIPO_COSTERA, TIPO_ALTA_MAR = 'costera', 'altamar'
+PRODUCTOS_CLIMATOLOGICOS_API_URL = BASE_URL + '/productos/climatologicos/balancehidrico/{}/{}/'
+RESUMEN_CLIMATOLOGICO_MENSUAL_API_URL = BASE_URL + '/productos/climatologicos/resumenclimatologico/nacional/{}/{}/'
 OBSERVACION_CONVENCIONAL_API_URL = BASE_URL + '/observacion/convencional/todas/'
 OBSERVACION_CONVENCIONAL_ESTACION_API_URL = BASE_URL + 'observacion/convencional/datos/estacion/{}/'
 MAPA_RIESGO_INCENDIOS_ESTIMADO = BASE_URL + '/incendios/mapasriesgo/estimado/area/{}'
@@ -38,17 +41,24 @@ MAPA_RIESGO_INCENDIOS_PREVISTO = BASE_URL + '/incendios/mapasriesgo/previsto/dia
 MAPA_ANALISIS_API_URL = BASE_URL + '/mapasygraficos/analisis/'
 MAPAS_SIGNIFICATIVOS_FECHA_API_URL = BASE_URL + '/mapasygraficos/mapassignificativos/fecha/{}/{}/{}/'
 MAPAS_SIGNIFICATIVOS_API_URL = BASE_URL + '/mapasygraficos/mapassignificativos/{}/{}/'
-MAPAS_SIGNIFICATIVOS_DIAS = {
-    'D+0 (00-12)': 'a', 'D+0 (12-24)': 'b',
-    'D+1 (00-12)': 'c', 'D+1 (12-24)': 'd',
-    'D+2 (00-12)': 'e', 'D+2 (12-24)': 'f'
-}
 MAPA_RAYOS_API_URL = BASE_URL + '/red/rayos/mapa/'
 RADAR_NACIONAL_API_URL = BASE_URL + '/red/radar/nacional'
 RADAR_REGIONAL_API_URL = BASE_URL + '/red/radar/regional/{}'
 SATELITE_SST = BASE_URL + '/satelites/producto/sst/'
 SATELITE_NVDI = BASE_URL + '/satelites/producto/nvdi/'
 CONTAMINACION_FONDO_ESTACION_API_URL = BASE_URL + '/red/especial/contaminacionfondo/estacion/{}/'
+
+# Params
+MAPAS_SIGNIFICATIVOS_DIAS = {
+    'HOY_0_12': 'a',
+    'HOY_12_24': 'b',
+    'MANANA_0_12': 'c',
+    'MANANA_12_24': 'd',
+    'PASADO_MANANA_0_12': 'e',
+    'PASADO_MANANA_12_24': 'f'
+}
+VCP, VCT, VCV = 'P', 'T', 'V'
+TIPO_COSTERA, TIPO_ALTA_MAR = 'costera', 'altamar'
 PERIODO_SEMANA, PERIODO_DIA = 'PERIODO_SEMANA', 'PERIODO_DIA'
 INCENDIOS_MANANA, INCENDIOS_PASADO_MANANA, INCENDIOS_EN_3_DIAS = range(1, 4)
 PENINSULA, CANARIAS, BALEARES = 'p', 'c', 'b'
@@ -339,7 +349,7 @@ class Estacion:
     @staticmethod
     def buscar_estacion(nombre):
         """
-        Devuelve un diccionario con la información de la estación pasado su nombre por parámetro
+        Devuelve un array de Estaciones que contienen el nombre pasado por parámetro
         :param nombre: Nombre de la estación
         """
         nombre = nombre.upper()
@@ -363,7 +373,7 @@ class Estacion:
 class Aemet:
     def __init__(self, api_key=API_KEY, api_key_file='', verbose=False):
         if not api_key and not api_key_file:
-            raise Exception('You must provide an API KEY')
+            raise Exception('Tienes que añadir una clave de API')
         if api_key_file:
             with open(api_key_file) as f:
                 api_key = f.read().strip()
@@ -397,7 +407,10 @@ class Aemet:
             verify=False    # Avoid SSL Verification .__.
         )
         if r.status_code == 200:
-            r = requests.get(r.json()['datos'], verify=False)
+            url = r.json()['datos']
+            if self.verbose:
+                print(url)
+            r = requests.get(url, verify=False)
             if todos:
                 data = r.json()
             else:
@@ -406,9 +419,8 @@ class Aemet:
                 except:
                     return r.json()
             return data
-        return {
-            'error': r.status_code
-        }
+        else:
+            raise Exception('Error: {}'.format(r.json()))
 
     def _get_request_normalized_data(self, url):
         """
@@ -447,6 +459,34 @@ class Aemet:
         data = {estacion['idema']: estacion['ubi'] for estacion in estaciones}
         with open(archivo_salida, 'w') as f:
             f.write(json.dumps(data, indent=4))
+
+    def _download_file_from_url(self, url, out_file):
+        """
+        Creates a new file with the content of the image response from an url
+        :param url: The URL
+        :param out_file: Image filename
+        """
+        if self.verbose:
+            print('Downloading from {}...'.format(url))
+        try:
+            r = requests.get(
+                url,
+                params=self.querystring,
+                headers=self.headers,
+                verify=False
+            )
+            error = r.json()['estado']
+            return {
+                'error': error
+            }
+        except:
+            data = r.content
+            with open(out_file, 'wb') as f:
+                f.write(data)
+            return {
+                'status': 200,
+                'out_file': out_file
+            }
 
     def _download_image_from_url(self, url, out_file):
         """
@@ -490,7 +530,7 @@ class Aemet:
         r = requests.get(
             url,
             params = {
-                "nombre": name,
+                'nombre': name,
                 'api_key': self.api_key
             },
             headers=self.headers,
@@ -530,9 +570,9 @@ class Aemet:
         :param provincia: ID de la provincia
         """
         if ccaa and provincia:
-            raise Exception('You cannot set "provincia" and "ccaa" at the same time')
+            raise Exception('No puedes establecer un valor de "provincia" y de "ccaa" a la vez')
         if (ccaa or provincia) and ambito == NACIONAL:
-            raise Exception('You cannot specify "provincia" or "ccaa" when you set "ambito=NACIONAL"')
+            raise Exception('No puedes especificar una "provincia" o "ccaa" cuando "ambito=NACIONAL"')
         url = PREDICCION_NORMALIZADA_API_URL.format(ambito, dia, ccaa + provincia)
         if fecha_elaboracion:
             url += 'elaboracion/{}/'.format(fecha_elaboracion)
@@ -574,14 +614,14 @@ class Aemet:
         """
         if tipo == TIPO_COSTERA:
             if not costa:
-                raise Exception('You must provide a "costa" value')
+                raise Exception('Es obligatorio utilizar el parámetro "costa"')
             url = PREDICCION_MARITIMA_COSTERA_API_URL.format(costa)
         elif tipo == TIPO_ALTA_MAR:
             if not area:
-                raise Exception('You must provide an "area" value')
+                raise Exception('Es obligatorio utilizar el parámetro "area"')
             url = PREDICCION_MARITIMA_ALTA_MAR_API_URL.format(area)
         else:
-            raise Exception('Error: "tipo" value not valid')
+            raise Exception('Error: "tipo" no válido')
 
         return PrediccionMaritima.load(self._get_request_data(url), tipo)
 
@@ -613,7 +653,7 @@ class Aemet:
 
     def descargar_mapas_significativos(
             self, archivo_salida, fecha='',
-            ambito='esp', dia=MAPAS_SIGNIFICATIVOS_DIAS['D+0 (00-12)']):
+            ambito='esp', dia=MAPAS_SIGNIFICATIVOS_DIAS['HOY_0_12']):
         """
         Descarga una imagen con los mapas significativos
         :param archivo_salida: Nombre del archivo en el que se va a guardar
@@ -687,14 +727,38 @@ class Aemet:
         url = SATELITE_NVDI
         return self._download_image_from_url(url, archivo_salida)
 
+    def descargar_productos_climatologicos(self, archivo_salida, anyo, decena):
+        """
+        Se obtiene, para la decema y el año pasados por parámetro, el Boletín
+        Hídrico Nacional que se elabora cada diez días. Se presenta información
+        resumida de forma distribuida para todo el territorio nacional de
+        diferentes variables, en las que se incluye informaciones de la
+        precipitación y la evapotranspiración potencial acumuladas desde el 1 de septiembre.
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        :param anyo: Año de consulta
+        :param decena: Número de la decena de días que se va a consultar
+        """
+        if decena < 1 or decena > 36:
+            raise Exception('Error: La decena tiene que ser un número entre 1 y 36')
+        if decena < 10:
+            decena = '0' + str(decena)
+        url = PRODUCTOS_CLIMATOLOGICOS_API_URL.format(anyo, decena)
+        return self._download_file_from_url(url, archivo_salida)
+
+    def descargar_resumen_mensual_climatologico(self, archivo_salida, anyo, mes):
+        """
+        Resumen climatológico nacional, para el año y mes pasado por parámetro,
+        sobre el estado del clima y la evolución de las principales variables
+        climáticas, en especial temperatura y precipitación, a nivel mensual, estacional y anual.
+        :param archivo_salida: Nombre del archivo en el que se va a guardar
+        :param anyo: Año de consulta
+        :param mes: Mes de consulta
+        """
+        if mes < 1 or mes > 12:
+            raise Exception('Error: Debes establecer un número de mes válido (1-12)')
+        url = RESUMEN_CLIMATOLOGICO_MENSUAL_API_URL.format(anyo, mes)
+        return self._download_file_from_url(url, archivo_salida)
+
 if __name__ == '__main__':
-    aemet = Aemet()
-    municipio = Municipio.buscar('Logroño')
-    prediccion = aemet.get_prediccion(municipio.get_codigo())
-    for dia in prediccion.prediccion:
-        print(dia.fecha)
-        print(dia.get_temperatura_maxima())
-        print(dia.get_temperatura_minima())
-    estaciones = Estacion.buscar_estacion('Logroño')
-    logrono = estaciones[0]
-    print(logrono)
+    aemet = Aemet(verbose=True)
+    print(aemet.descargar_productos_climatologicos('resumen.pdf', 2017, 8))
