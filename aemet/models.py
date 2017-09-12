@@ -46,6 +46,12 @@ class Prediccion:
         print('Predicción: {}'.format(self.prediccion[0].ver()))
         print('Nombre: {}'.format(self.nombre))
 
+    def __str__(self):
+        return '{} @ {}'.format(
+            self.nombre,
+            self.provincia
+        )
+
 class PrediccionDia:
     def __init__(self, uvMax=0, rachaMax=[], fecha='', sensTermica=[], humedadRelativa=[],
             temperatura=[], estadoCielo=[], cotaNieveProv=[], viento=[], probPrecipitacion=[]):
@@ -99,6 +105,11 @@ class PrediccionDia:
 
     def get_temperatura_minima(self):
         return self.temperatura['minima']
+
+    def __str__(self):
+        return 'PrediccionDia @ {}'.format(
+            self.fecha
+        )
 
 class PrediccionPorHoras:
     def __init__(self, estadoCielo=[], precipitacion=[], vientoAndRachaMax=[], ocaso='',
@@ -480,7 +491,7 @@ class Aemet:
         data = r.json()
         return data
 
-    def get_prediccion(self, codigo_municipio, periodo=PERIODO_SEMANA):
+    def get_prediccion(self, codigo_municipio, periodo=PERIODO_SEMANA, raw=False):
         """
         Devuelve un objeto de la clase Prediccion dado un código de municipio y
         un periodo de consulta.
@@ -498,6 +509,8 @@ class Aemet:
                 codigo_municipio
             )
         data = self._get_request_data(url)
+        if raw:
+            return data
         return Prediccion.load(data, periodo)
 
     def get_prediccion_normalizada(self, ambito=NACIONAL, dia=HOY, ccaa='',
@@ -519,7 +532,7 @@ class Aemet:
             url += 'elaboracion/{}/'.format(fecha_elaboracion)
         return self._get_request_normalized_data(url)
 
-    def get_prediccion_especifica_montanya(self, area, dia=-1):
+    def get_prediccion_especifica_montanya(self, area, dia=-1, raw=False):
         """
         Predicción meteorológica para la zona montañosa que se pasa como parámetro
         (area) con validez para el día (día). Periodicidad de actualización: continuamente
@@ -530,7 +543,11 @@ class Aemet:
             url = PREDICCION_ESPECIFICA_MONTANYA_API_URL.format(area)
         else:
             url = PREDICCION_ESPECIFICA_MONTANYA_DIA_API_URL.format(area, dia)
-        return self._get_request_data(url)
+        data = self._get_request_data(url)
+        if raw:
+            return data
+        # TODO
+        return data
 
     def get_prediccion_nivologica(self, area):
         """
@@ -542,7 +559,7 @@ class Aemet:
         url = PREDICCION_NIVOLOGICA_API_URL.format(area)
         return self._get_request_normalized_data(url)
 
-    def get_prediccion_especifica_playa(self, playa):
+    def get_prediccion_especifica_playa(self, playa, raw=False):
         """
         La predicción diaria de la playa que se pasa como parámetro.
         Establece el estado de nubosidad para unas horas determinadas, las 11 y
@@ -551,7 +568,11 @@ class Aemet:
         :param playa: ID de la playa
         """
         url = PREDICCION_ESPECIFICA_PLAYA_API_URL.format(playa)
-        return self._get_request_data(url)
+        data = self._get_request_data(url)
+        if raw:
+            return data
+        # TODO
+        return data
 
     def get_prediccion_especifica_uvi(self, dia=0):
         """
@@ -562,7 +583,7 @@ class Aemet:
         url = PREDICCION_ESPECIFICA_UVI_API_URL.format(dia)
         return self._get_request_normalized_data(url)
 
-    def get_observacion_convencional(self, estacion=''):
+    def get_observacion_convencional(self, estacion='', raw=False):
         """
         Devuelve un objeto de la clase Observacion con los datos de la consulta
         sobre una estación
@@ -570,17 +591,27 @@ class Aemet:
         """
         if estacion:
             url = OBSERVACION_CONVENCIONAL_ESTACION_API_URL.format(estacion)
-            return Observacion.load(self._get_request_data(url))
+            data = self._get_request_data(url)
+            if raw:
+                return data
+            return Observacion.load(data)
         else:
             url = OBSERVACION_CONVENCIONAL_API_URL
-            return Observacion.load(self._get_request_data(url, todos=True), multiple=True)
+            data = self._get_request_data(url, todos=True)
+            if raw:
+                return data
+            return Observacion.load(data, multiple=True)
 
-    def get_valores_climatologicos_mensuales(self, anyo, estacion):
+    def get_valores_climatologicos_mensuales(self, anyo, estacion, raw=False):
         """
         Devuelve un diccionario con la información de todas las estaciones
         """
         url = VALORES_CLIMATOLOGICOS_MENSUALES.format(anyo, anyo, estacion)
-        return self._get_request_data(url)
+        data = self._get_request_data(url)
+        if raw:
+            return data
+        # TODO
+        return data
 
     def get_contaminacion_fondo(self, estacion):
         # TODO
@@ -588,7 +619,7 @@ class Aemet:
         data = self._get_request_normalized_data(url).splitlines()
         return data
 
-    def get_prediccion_maritima(self, tipo=TIPO_COSTERA, costa='', area=''):
+    def get_prediccion_maritima(self, tipo=TIPO_COSTERA, costa='', area='', raw=False):
         """
         Devuelve un objeto de la clase PrediccionMaritima dado un tipo de predicción
         (TIPO_COSTERA por defecto o TIPO_ALTA_MAR) y un valor de costa o un valor de área
@@ -607,16 +638,23 @@ class Aemet:
         else:
             raise Exception('Error: "tipo" no válido')
 
-        return PrediccionMaritima.load(self._get_request_data(url), tipo)
+        data = self._get_request_data(url)
+        if raw:
+            return data
+        return PrediccionMaritima.load(data, tipo)
 
-    def get_valores_climatologicos_normales(self, estacion):
+    def get_valores_climatologicos_normales(self, estacion, raw=False):
         """
         Valores climatológicos normales (periodo 1981-2010) para la estación pasada por parámetro.
         Periodicidad: 1 vez al día.
         :param estacion: ID de la estación de IDEMA
         """
         url = VALORES_CLIMATOLOGICOS_NORMALES.format(estacion)
-        return self._get_request_data(url)
+        data = self._get_request_data(url)
+        if raw:
+            return data
+        # TODO
+        return data
 
     def get_valores_climatologicos_extremos(self, estacion, parametro=VCP):
         """
@@ -745,4 +783,4 @@ class Aemet:
 
 if __name__ == '__main__':
     aemet = Aemet()
-    print(aemet.get_prediccion_especifica_uvi(1))
+    print(aemet.get_prediccion('26064').prediccion)
