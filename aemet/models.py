@@ -21,9 +21,9 @@ class Prediccion:
         self.nombre = nombre
 
     @staticmethod
-    def load(data, periodo):
+    def from_json(data, periodo):
         if periodo == PERIODO_DIA:
-            prediccion = PrediccionPorHoras.load(data['prediccion'])
+            prediccion = PrediccionPorHoras.from_json(data['prediccion'])
         elif periodo == PERIODO_SEMANA:
             prediccion = PrediccionDia.load(data['prediccion'])
 
@@ -130,7 +130,7 @@ class PrediccionPorHoras:
         self.sensTermica = sensTermica
 
     @staticmethod
-    def load(data):
+    def from_json(data):
         periodos = []
         for p in data['dia']:
             try:
@@ -168,7 +168,7 @@ class PrediccionMaritima:
         self.tipo = tipo
 
     @staticmethod
-    def load(data, tipo):
+    def from_json(data, tipo):
         if tipo == TIPO_COSTERA:
             aviso = data['aviso']
             tendencia = data['tendencia']
@@ -202,7 +202,7 @@ class Observacion:
         self.ubi = ubi
 
     @staticmethod
-    def load(data, multiple=False):
+    def from_json(data, multiple=False):
         if multiple:
             observaciones = []
             for o in data:
@@ -251,7 +251,7 @@ class Municipio:
         self.nombre = nombre
 
     @staticmethod
-    def load(data):
+    def from_json(data):
         return Municipio(
             cod_auto=data['CODAUTO'],
             cpro=data['CPRO'],
@@ -263,19 +263,26 @@ class Municipio:
     @staticmethod
     def get_municipio(id):
         municipio = list(filter(lambda m: id == '{}{}'.format(m['CPRO'], m['CMUN']), Municipio.MUNICIPIOS))[0]
-        return Municipio.load(municipio)
+        return Municipio.from_json(municipio)
 
     @staticmethod
     def buscar(name):
+        """
+        Devuelve una lista con los resultados de la búsqueda
+        :param name: Nombre del municipio
+        """
         try:
-            municipio = list(filter(lambda t: name in t['NOMBRE'], Municipio.MUNICIPIOS))[0]
-            municipio = Municipio.load(municipio)
-            return municipio
+            municipios_raw = list(filter(lambda t: name in t['NOMBRE'], Municipio.MUNICIPIOS))
+            municipios = list(map(lambda m: Municipio.from_json(m), municipios_raw))
+            return municipios
         except:
             return None
 
     def get_codigo(self):
         return '{}{}'.format(self.cpro, self.cmun)
+
+    def __str__(self):
+        return '{}: {}'.format(self.nombre, self.get_codigo())
 
 class Estacion:
     def __init__(self, altitud, indicativo, provincia, longitud, nombre, latitud, indsinop):
@@ -394,7 +401,7 @@ class Aemet:
             'error': r.status_code
         }
 
-    def _get_fecha_hoy():
+    def _get_fecha_hoy(self):
         """
         Devuelve la fecha formateada en el formato que acepta AEMET
         """
@@ -511,7 +518,7 @@ class Aemet:
         data = self._get_request_data(url)
         if raw:
             return data
-        return Prediccion.load(data, periodo)
+        return Prediccion.from_json(data, periodo)
 
     def get_prediccion_normalizada(self, ambito=NACIONAL, dia=HOY, ccaa='',
             provincia='', fecha_elaboracion=''):
@@ -594,13 +601,13 @@ class Aemet:
             data = self._get_request_data(url)
             if raw:
                 return data
-            return Observacion.load(data)
+            return Observacion.from_json(data)
         else:
             url = OBSERVACION_CONVENCIONAL_API_URL
             data = self._get_request_data(url, todos=True)
             if raw:
                 return data
-            return Observacion.load(data, multiple=True)
+            return Observacion.from_json(data, multiple=True)
 
     def get_valores_climatologicos_mensuales(self, anyo, estacion, raw=False):
         """
@@ -641,7 +648,7 @@ class Aemet:
         data = self._get_request_data(url)
         if raw:
             return data
-        return PrediccionMaritima.load(data, tipo)
+        return PrediccionMaritima.from_json(data, tipo)
 
     def get_valores_climatologicos_normales(self, estacion, raw=False):
         """
