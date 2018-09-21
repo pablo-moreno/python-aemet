@@ -9,9 +9,9 @@ from aemet.constants import *
 # Disable Insecure Request Warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
 class Prediccion:
-    def __init__(self, provincia, version, id, origen,
-            elaborado, prediccion, nombre):
+    def __init__(self, provincia, version, id, origen, elaborado, prediccion, nombre):
         self.provincia = provincia
         self.version = version
         self.id = id
@@ -22,6 +22,7 @@ class Prediccion:
 
     @staticmethod
     def from_json(data, periodo):
+        prediccion = ''
         if periodo == PERIODO_DIA:
             prediccion = PrediccionPorHoras.from_json(data['prediccion'])
         elif periodo == PERIODO_SEMANA:
@@ -52,19 +53,20 @@ class Prediccion:
             self.provincia
         )
 
+
 class PrediccionDia:
-    def __init__(self, uvMax=0, rachaMax=[], fecha='', sensTermica=[], humedadRelativa=[],
-            temperatura=[], estadoCielo=[], cotaNieveProv=[], viento=[], probPrecipitacion=[]):
-        self.uvMax = uvMax
-        self.rachaMax = rachaMax
+    def __init__(self, uv_max=0, racha_max=[], fecha='', sens_termica=[], humedad_relativa=[],
+                 temperatura=[], estado_cielo=[], cota_nieve_prov=[], viento=[], prob_precipitacion=[]):
+        self.uvMax = uv_max
+        self.rachaMax = racha_max
         self.fecha = fecha
-        self.sensTermica = sensTermica
-        self.humedadRelativa = humedadRelativa
+        self.sensTermica = sens_termica
+        self.humedadRelativa = humedad_relativa
         self.temperatura = temperatura
-        self.estadoCielo = estadoCielo
-        self.cotaNieveProv = cotaNieveProv
+        self.estadoCielo = estado_cielo
+        self.cotaNieveProv = cota_nieve_prov
         self.viento = viento
-        self.probPrecipitacion = probPrecipitacion
+        self.probPrecipitacion = prob_precipitacion
 
     @staticmethod
     def load(data):
@@ -76,15 +78,15 @@ class PrediccionDia:
                 uvMax = []
             predicciones.append(
                 PrediccionDia(
-                    uvMax=uvMax,
-                    rachaMax=dia['rachaMax'],
+                    uv_max=uvMax,
+                    racha_max=dia['rachaMax'],
                     fecha=dia['fecha'],
-                    sensTermica=dia['sensTermica'],
-                    humedadRelativa=dia['humedadRelativa'],
+                    sens_termica=dia['sensTermica'],
+                    humedad_relativa=dia['humedadRelativa'],
                     temperatura=dia['temperatura'],
-                    cotaNieveProv=dia['cotaNieveProv'],
+                    cota_nieve_prov=dia['cotaNieveProv'],
                     viento=dia['viento'],
-                    probPrecipitacion=dia['probPrecipitacion'],
+                    prob_precipitacion=dia['probPrecipitacion'],
                 )
             )
         return predicciones
@@ -111,10 +113,11 @@ class PrediccionDia:
             self.fecha
         )
 
+
 class PrediccionPorHoras:
     def __init__(self, estadoCielo=[], precipitacion=[], vientoAndRachaMax=[], ocaso='',
-            probTormenta=[], probPrecipitacion=[], orto='', humedadRelativa=[], nieve=[],
-            probNieve=[], fecha='', temperatura=[], sensTermica=[]):
+                 probTormenta=[], probPrecipitacion=[], orto='', humedadRelativa=[], nieve=[],
+                 probNieve=[], fecha='', temperatura=[], sensTermica=[]):
         self.estadoCielo = estadoCielo
         self.precipitacion = precipitacion
         self.vientoAndRachaMax = vientoAndRachaMax
@@ -155,9 +158,10 @@ class PrediccionPorHoras:
                 pass
         return periodos
 
+
 class PrediccionMaritima:
     def __init__(self, origen={}, aviso={}, situacion={}, prediccion={},
-            tendencia=[], id='', nombre='',tipo=TIPO_COSTERA):
+                 tendencia=[], id='', nombre='', tipo=TIPO_COSTERA):
         self.origen = origen
         self.aviso = aviso
         self.situacion = situacion
@@ -186,6 +190,7 @@ class PrediccionMaritima:
             nombre=data['nombre'],
             tipo=tipo
         )
+
 
 class Observacion:
     def __init__(self, idema, lon, lat, fint, prec, alt, vmax, vv, dv, dmax, ubi):
@@ -239,8 +244,9 @@ class Observacion:
             ubi=data['ubi']
         )
 
+
 class Municipio:
-    with open(os.path.join(BASE_DIR, 'data','municipios.json')) as f:
+    with open(os.path.join(BASE_DIR, 'data', 'municipios.json')) as f:
         MUNICIPIOS = json.loads(f.read())
 
     def __init__(self, cod_auto, cpro, cmun, dc, nombre):
@@ -283,6 +289,7 @@ class Municipio:
 
     def __str__(self):
         return '{}: {}'.format(self.nombre, self.get_codigo())
+
 
 class Estacion:
     def __init__(self, altitud, indicativo, provincia, longitud, nombre, latitud, indsinop):
@@ -329,6 +336,7 @@ class Estacion:
             )
         return result
 
+
 class Aemet:
     def __init__(self, api_key=API_KEY, api_key_file='', verbose=False):
         if not api_key and not api_key_file:
@@ -348,7 +356,7 @@ class Aemet:
         api_key = input('Escriba su clave de API: ')
         if not api_key:
             raise Exception('La clave de API no puede estar vacía')
-        API_KEY = api_key
+
         with open(API_KEY_FILE, 'w') as f:
             f.write(api_key)
         print('Clave de API almacenada en {}'.format(API_KEY_FILE))
@@ -363,7 +371,7 @@ class Aemet:
             url,
             headers=self.headers,
             params=self.querystring,
-            verify=False    # Avoid SSL Verification .__.
+            verify=False  # Avoid SSL Verification .__.
         )
         if r.status_code == 200:
             url = r.json()['datos']
@@ -375,7 +383,7 @@ class Aemet:
             else:
                 try:
                     data = r.json()[0]
-                except:
+                except IndexError:
                     return r.json()
             return data
         else:
@@ -391,7 +399,7 @@ class Aemet:
             url,
             headers=self.headers,
             params=self.querystring,
-            verify=False    # Avoid SSL Verification .__.
+            verify=False  # Avoid SSL Verification .__.
         )
         if r.status_code == 200:
             r = requests.get(r.json()['datos'], verify=False)
@@ -427,18 +435,19 @@ class Aemet:
         """
         if self.verbose:
             print('Downloading from {}...'.format(url))
+        r = requests.get(
+            url,
+            params=self.querystring,
+            headers=self.headers,
+            verify=False
+        )
         try:
-            r = requests.get(
-                url,
-                params=self.querystring,
-                headers=self.headers,
-                verify=False
-            )
+
             error = r.json()['estado']
             return {
                 'error': error
             }
-        except:
+        except KeyError:
             data = r.content
             with open(out_file, 'wb') as f:
                 f.write(data)
@@ -488,7 +497,7 @@ class Aemet:
         url = MUNICIPIOS_API_URL
         r = requests.get(
             url,
-            params = {
+            params={
                 'nombre': name,
                 'api_key': self.api_key
             },
@@ -521,7 +530,7 @@ class Aemet:
         return Prediccion.from_json(data, periodo)
 
     def get_prediccion_normalizada(self, ambito=NACIONAL, dia=HOY, ccaa='',
-            provincia='', fecha_elaboracion=''):
+                                   provincia='', fecha_elaboracion=''):
         """
         Devuelve el texto elaborado por AEMET de la predicción meteorológica para
         un determinado ámbito, día, Comunidad Autónoma, provincia y/o fecha de elaboración.
@@ -788,6 +797,3 @@ class Aemet:
         url = RESUMEN_CLIMATOLOGICO_MENSUAL_API_URL.format(anyo, mes)
         return self._download_file_from_url(url, archivo_salida)
 
-if __name__ == '__main__':
-    aemet = Aemet()
-    print(aemet.get_prediccion('26064').prediccion)
