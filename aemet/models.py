@@ -305,12 +305,12 @@ class Estacion:
         return 'Nombre: {}'.format(self.nombre)
 
     @staticmethod
-    def get_estaciones():
+    def get_estaciones(api_key):
         """
         Devuelve un diccionario con la información de todas las estaciones
         """
         url = ESTACIONES_EMA_API_URL
-        return Aemet()._get_request_data(url, todos=True)
+        return Aemet(api_key=api_key)._get_request_data(url, todos=True)
 
     @staticmethod
     def buscar_estacion(nombre):
