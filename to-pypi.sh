@@ -7,4 +7,4 @@ sudo rm dist/*
 sudo python3 setup.py sdist bdist_wheel
 
 # 2. Upload to Pypi
-sudo twine upload dist/*
+twine upload dist/*
