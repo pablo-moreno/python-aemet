@@ -1,6 +1,6 @@
 # Include the license file
 include LICENSE
-include README.rst
+include README.md
 include description.txt
 include requirements.txt
 
