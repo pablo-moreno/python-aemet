@@ -1,4 +1,4 @@
-#Python AEMET
+# Python AEMET
 
 Librería cliente de la API de datos de AEMET.
 Permite obtener y manejar la información de la API de datos abiertos de AEMET.
@@ -9,7 +9,7 @@ Además, permite descargar en archivos los mapas que genera y publica AEMET.
 La información que recoge y utiliza esta librería es propiedad de la
 Agencia Estatal de Meteorología.
 
-##Instalación 
+## Instalación 
 
 
 Utiliza pip para instalar la librería:
@@ -18,7 +18,7 @@ Utiliza pip para instalar la librería:
 pip install python-aemet
 ```
 
-##API Key
+## API Key
 
 Obtén tu clave de API en la siguiente URL: 
 
