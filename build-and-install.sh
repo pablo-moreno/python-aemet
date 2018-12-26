@@ -1,5 +1,7 @@
+#!/usr/bin/env bash
+
 # 1. BUILD SOURCE
-sudo python3.5 setup.py build
+sudo python3 setup.py build
 
 # 2. INSTALL FROM BUILD FOLDER
-sudo python3.5 setup.py install
+sudo python3 setup.py install
