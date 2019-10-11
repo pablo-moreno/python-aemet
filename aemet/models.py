@@ -78,6 +78,7 @@ class PrediccionDia:
                     sens_termica=dia.get('sensTermica', ()),
                     humedad_relativa=dia.get('humedadRelativa', ()),
                     temperatura=dia.get('temperatura', ()),
+                    estado_cielo=dia.get('estadoCielo', ()),
                     cota_nieve_prov=dia.get('cotaNieveProv', ()),
                     viento=dia.get('viento', ()),
                     prob_precipitacion=dia.get('probPrecipitacion', ()),
@@ -92,6 +93,7 @@ class PrediccionDia:
         print('Sensación térmica: {}'.format(self.sensTermica))
         print('Humedad relativa: {}'.format(self.humedadRelativa))
         print('Temperatura: {}'.format(self.temperatura))
+        print('Estado del cielo: {}'.format(self.estadoCielo))
         print('Cota de nieve: {}'.format(self.cotaNieveProv))
         print('Viento: {}'.format(self.viento))
         print('Probabilidad de precipitación: {}'.format(self.probPrecipitacion))
