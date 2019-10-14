@@ -1,6 +1,6 @@
 # Python AEMET
 
-[![PyPI version](https://badge.fury.io/py/python-aemet.svg)](https://badge.fury.io/py/python-aemet)
+![PyPI](https://img.shields.io/pypi/v/python-aemet)
 [![CircleCI](https://circleci.com/gh/pablo-moreno/python-aemet.svg?style=svg)](https://circleci.com/gh/pablo-moreno/python-aemet)
 
 Librería cliente de la API de datos de AEMET.
