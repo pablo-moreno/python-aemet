@@ -1,0 +1,50 @@
+version: 2
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - hold:
+          type: approval
+      - deploy:
+          requires: 
+            - hold
+          filters:
+            tags:
+              only: /[0-9]+\.[0-9]+\.[0-9]+/
+            branches:
+              ignore: /.*/
+
+jobs:
+
+  deploy:
+    docker:
+      - image: python:3.7.4
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-dependency-cache-{{ checksum "setup.py" }}
+      - run:
+          name: install python dependencies
+          command: |
+            python -m venv venv
+            . venv/bin/activate
+            pip install twine
+            pip install -r requirements.txt
+      - save_cache:
+          key: v1-dependency-cache-{{ checksum "setup.py" }}
+          paths:
+            - "venv"
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = $PYPI_USERNAME" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: upload to pypi
+          command: |
+            . venv/bin/activate
+            python setup.py build sdist
+            twine upload dist/*
