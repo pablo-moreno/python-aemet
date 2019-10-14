@@ -1,5 +1,8 @@
 # Python AEMET
 
+[![PyPI version](https://badge.fury.io/py/python-aemet.svg)](https://badge.fury.io/py/python-aemet)
+[![CircleCI](https://circleci.com/gh/pablo-moreno/python-aemet.svg?style=svg)](https://circleci.com/gh/pablo-moreno/python-aemet)
+
 Librería cliente de la API de datos de AEMET.
 Permite obtener y manejar la información de la API de datos abiertos de AEMET.
 Cuenta con una serie de modelos de datos y métodos preparados para poder
