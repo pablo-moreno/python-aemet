@@ -30,7 +30,7 @@ jobs:
           command: |
             python -m venv venv
             . venv/bin/activate
-            pip install twine
+            pip install twine wheel
             pip install -r requirements.txt
       - save_cache:
           key: v1-dependency-cache-{{ checksum "setup.py" }}
