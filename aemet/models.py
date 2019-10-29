@@ -486,13 +486,11 @@ class Aemet:
             'out_file': out_file
         }
 
-    def get_municipio(self, name):
-        # TODO
-        url = MUNICIPIOS_API_URL
+    def get_municipio(self, id_municipio):
+        url = MUNICIPIOS_DETALLE_API_URL.format(id_municipio)
         r = requests.get(
             url,
             params={
-                'nombre': name,
                 'api_key': self.api_key
             },
             headers=self.headers,
