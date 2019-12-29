@@ -358,7 +358,7 @@ class AemetHttpClient(object):
 
     def get_headers(self):
         return {
-            'api_key': self.get_api_key,
+            'api_key': self.get_api_key(),
             **self.headers
         }
 
