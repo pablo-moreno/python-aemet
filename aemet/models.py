@@ -654,7 +654,7 @@ class Aemet(AemetHttpClient):
         :param raw: [Opcional] Devuelve el resultado en formato json
         """
         url = VALORES_CLIMATOLOGICOS_MENSUALES.format(anyo, anyo, estacion)
-        data = self.get_request_data(url)
+        data = self.get_request_data(url, todos=True)
         if raw:
             return data
         # TODO
