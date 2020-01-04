@@ -330,20 +330,40 @@ class Estacion:
             )
         return result
 
-
-class Aemet:
-    def __init__(self, api_key=API_KEY, api_key_file='', verbose=False):
+class AemetHttpClient(object):
+    def __init__(self, api_key=API_KEY, api_key_file='', headers=dict(), querystring=dict(), verbose=False):
         if not api_key and not api_key_file:
             raise Exception('Tienes que añadir una clave de API')
+
         if api_key_file:
             with open(api_key_file) as f:
                 api_key = f.read().strip()
+
         self.api_key = api_key
-        self.querystring = {
-            'api_key': self.api_key
-        }
-        self.headers = {}
+        self.querystring = querystring
+        self.headers = headers
         self.verbose = verbose
+
+    def get_api_key(self):
+        return self.api_key
+
+    def set_api_key(self, api_key):
+        self.api_key = api_key
+
+    def get_querystring(self):
+        return self.querystring
+
+    def set_querystring(self, querystring):
+        self.querystring = querystring
+
+    def get_headers(self):
+        return {
+            'api_key': self.get_api_key(),
+            **self.headers
+        }
+
+    def set_headers(self, headers):
+        self.headers = headers
 
     @staticmethod
     def guardar_clave_api():
@@ -353,6 +373,7 @@ class Aemet:
 
         with open(API_KEY_FILE, 'w') as f:
             f.write(api_key)
+
         print('Clave de API almacenada en {}'.format(API_KEY_FILE))
 
     def get_request_data(self, url, todos=False):
@@ -361,27 +382,36 @@ class Aemet:
         """
         if self.verbose:
             print(url)
+
         r = requests.get(
             url,
-            headers=self.headers,
-            params=self.querystring,
+            headers=self.get_headers(),
+            params=self.get_querystring(),
             verify=False  # Avoid SSL Verification .__.
         )
-        if r.status_code == 200:
-            url = r.json().get('datos')
-            if self.verbose:
-                print(url)
-            r = requests.get(url, verify=False)
-            if todos:
-                data = r.json()
-            else:
-                try:
-                    data = r.json()[0]
-                except IndexError:
-                    return r.json()
-            return data
-        else:
-            raise Exception('Error: {}'.format(r.json()))
+
+        if r.status_code != 200:
+            raise Exception(f'Error {r.json()}')
+
+        url = r.json().get('datos')
+
+        if not url:
+            return r.json()
+
+        if self.verbose:
+            print(url)
+
+        r = requests.get(url, verify=False)
+
+        if todos:
+            return r.json()
+
+        try:
+            return r.json()[0]
+        except IndexError:
+            return r.json()
+
+        return r.json()
 
     def get_request_normalized_data(self, url):
         """
@@ -391,8 +421,8 @@ class Aemet:
             print(url)
         r = requests.get(
             url,
-            headers=self.headers,
-            params=self.querystring,
+            headers=self.get_headers(),
+            params=self.get_querystring(),
             verify=False  # Avoid SSL Verification .__.
         )
         if r.status_code == 200:
@@ -402,24 +432,6 @@ class Aemet:
         return {
             'error': r.status_code
         }
-
-    def get_fecha_hoy(self):
-        """
-        Devuelve la fecha formateada en el formato que acepta AEMET
-        """
-        print(datetime.now())
-        return '{:%Y-%m-%d}'.format(datetime.now())
-
-    def get_archivo_codigos_idema(self, archivo_salida):
-        """
-        Crea un archivo json con todos los registros de estaciones de IDEMA
-        :param archivo_salida: Nombre del archivo de salida
-        """
-        url = OBSERVACION_CONVENCIONAL_API_URL
-        estaciones = self.get_request_data(url, todos=True)
-        data = {estacion.get('idema'): estacion.get('ubi') for estacion in estaciones}
-        with open(archivo_salida, 'w') as f:
-            f.write(json.dumps(data, indent=4))
 
     def download_file_from_url(self, url, out_file):
         """
@@ -431,12 +443,11 @@ class Aemet:
             print('Downloading from {}...'.format(url))
         r = requests.get(
             url,
-            params=self.querystring,
-            headers=self.headers,
+            params=self.get_querystring(),
+            headers=self.get_headers(),
             verify=False
         )
         try:
-
             error = r.json().get('estado')
             return {
                 'error': error
@@ -461,8 +472,8 @@ class Aemet:
         try:
             r = requests.get(
                 url,
-                params=self.querystring,
-                headers=self.headers,
+                params=self.get_querystring(),
+                headers=self.get_headers(),
                 verify=False
             )
             error = ''
@@ -485,6 +496,26 @@ class Aemet:
             'status': 200,
             'out_file': out_file
         }
+
+
+class Aemet(AemetHttpClient):
+    def get_fecha_hoy(self):
+        """
+        Devuelve la fecha formateada en el formato que acepta AEMET
+        """
+        print(datetime.now())
+        return '{:%Y-%m-%d}'.format(datetime.now())
+
+    def get_archivo_codigos_idema(self, archivo_salida):
+        """
+        Crea un archivo json con todos los registros de estaciones de IDEMA
+        :param archivo_salida: Nombre del archivo de salida
+        """
+        url = OBSERVACION_CONVENCIONAL_API_URL
+        estaciones = self.get_request_data(url, todos=True)
+        data = {estacion.get('idema'): estacion.get('ubi') for estacion in estaciones}
+        with open(archivo_salida, 'w') as f:
+            f.write(json.dumps(data, indent=4))
 
     def get_municipio(self, id_municipio):
         url = MUNICIPIOS_DETALLE_API_URL.format(id_municipio)
@@ -623,7 +654,7 @@ class Aemet:
         :param raw: [Opcional] Devuelve el resultado en formato json
         """
         url = VALORES_CLIMATOLOGICOS_MENSUALES.format(anyo, anyo, estacion)
-        data = self.get_request_data(url)
+        data = self.get_request_data(url, todos=True)
         if raw:
             return data
         # TODO
