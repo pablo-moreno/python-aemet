@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/python-aemet)](https://pypi.org/project/python-aemet)
 [![Downloads](https://img.shields.io/pypi/dm/python-aemet)](https://pypi.org/project/python-aemet)
-[![Actions Status](https://github.com/pablo-moreno/python-aemet/workflows/pythonpublish/badge.svg)](https://github.com/pablo-moreno/python-aemet/actions)
+[![Actions Status](https://github.com/pablo-moreno/python-aemet/workflows/Upload%20Python%20Package/badge.svg)](https://github.com/pablo-moreno/python-aemet/actions)
 
 
 Librería cliente de la API de datos de AEMET.
