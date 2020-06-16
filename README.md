@@ -28,3 +28,23 @@ pip install python-aemet
 Obtén tu clave de API en la siguiente URL: 
 
 https://opendata.aemet.es/centrodedescargas/obtencionAPIKey
+
+
+## Usar la librería
+
+La clase principal de la librería es la clase `Aemet`.
+
+```python
+from aemet import Aemet
+
+aemet_client = Aemet(api_key='your_api_key')
+```
+
+Instancia un objeto con la API key y tendrás acceso a todos los métodos.
+
+Para más información, revisa la [documentación](https://github.com/pablo-moreno/python-aemet/blob/master/DOCUMENTATION.rst)
+
+## ¿Dudas, sugerencias?
+
+Para cualquier duda, sugerencia o mejora, siéntete libre de abrir una [issue](https://github.com/pablo-moreno/python-aemet/issues) en el repositorio. No contesto a correos.
+
