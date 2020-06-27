@@ -660,6 +660,21 @@ class Aemet(AemetHttpClient):
         # TODO
         return data
 
+    def get_valores_climatologicos_diarios(self, fechaini, fechafin, estacion, raw=False):
+        """
+        Devuelve un diccionario con la información de todas las estaciones
+        :param fechaini: Fecha inicio consulta
+        :param fechafin: Fecha fin consulta
+        :param estacion: ID de estación de IDEMA
+        :param raw: [Opcional] Devuelve el resultado en formato json
+        """
+        url = VALORES_CLIMATOLOGICOS_DIARIOS.format(fechaini, fechafin, estacion)
+        data = self.get_request_data(url, todos=True)
+        if raw:
+            return data
+        # TODO
+        return data
+
     def get_contaminacion_fondo(self, estacion):
         # TODO
         url = CONTAMINACION_FONDO_ESTACION_API_URL.format(estacion)
