@@ -33,6 +33,7 @@ ESTACIONES_EMA_API_URL = BASE_URL + '/valores/climatologicos/inventarioestacione
 VALORES_CLIMATOLOGICOS_NORMALES = BASE_URL + '/valores/climatologicos/normales/estacion/{}'
 VALORES_CLIMATOLOGICOS_EXTREMOS = BASE_URL + '/valores/climatologicos/valoresextremos/parametro/{}/estacion/{}'
 VALORES_CLIMATOLOGICOS_MENSUALES = BASE_URL + '/valores/climatologicos/mensualesanuales/datos/anioini/{}/aniofin/{}/estacion/{}'
+VALORES_CLIMATOLOGICOS_DIARIOS = BASE_URL + '/valores/climatologicos/diarios/datos/fechaini/{}/fechafin/{}/estacion/{}'
 PRODUCTOS_CLIMATOLOGICOS_API_URL = BASE_URL + '/productos/climatologicos/balancehidrico/{}/{}/'
 RESUMEN_CLIMATOLOGICO_MENSUAL_API_URL = BASE_URL + '/productos/climatologicos/resumenclimatologico/nacional/{}/{}/'
 OBSERVACION_CONVENCIONAL_API_URL = BASE_URL + '/observacion/convencional/todas/'
