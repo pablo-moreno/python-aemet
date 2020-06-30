@@ -1,20 +1,23 @@
 ============
 Python AEMET
 ============
-.. image:: https://img.shields.io/pypi/v/python-aemet   :alt: PyPI - Python Version
-.. image:: https://img.shields.io/pypi/dm/python-aemet   :alt: Monthly Downloads
-.. image:: https://github.com/pablo-moreno/python-aemet/workflows/Upload%20Python%20Package/badge.svg   :alt: Actions Status
-
-
-PyPI Downloads Actions Status
+.. image:: https://img.shields.io/pypi/v/python-aemet
+   :target: https://pypi.org/project/python-aemet
+   
+.. image:: https://img.shields.io/pypi/dm/python-aemet
+   :target: https://pypi.org/project/python-aemet
+   
+.. image:: https://github.com/pablo-moreno/python-aemet/workflows/Upload%20Python%20Package/badge.svg
+   :target: https://github.com/pablo-moreno/python-aemet/actions
 
 Librería cliente de la API de datos de AEMET. Permite obtener y manejar la información de la API de datos abiertos de AEMET. Cuenta con una serie de modelos de datos y métodos preparados para poder utilizarlos de forma fácil y accesible. Además, permite descargar en archivos los mapas que genera y publica AEMET.
 
 La información que recoge y utiliza esta librería es propiedad de la Agencia Estatal de Meteorología.
-Instalación
 
+Instalación
+===========
 Utiliza pip para instalar la librería:
-======================================
+
 .. code-block:: bash
 
     pip install python-aemet
