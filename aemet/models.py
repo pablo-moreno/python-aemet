@@ -171,7 +171,7 @@ class PrediccionMaritima:
     def from_json(data, tipo):
         if tipo == TIPO_COSTERA:
             aviso = data.get('aviso', '')
-            tendencia = data('tendencia', '')
+            tendencia = data.get('tendencia', '')
         else:
             aviso = None
             tendencia = None
