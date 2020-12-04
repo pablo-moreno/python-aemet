@@ -5,3 +5,4 @@
 - Carlos Alarcón [@jchuerva](https://github.com/jchuerva)
 - Daniel Argüeso [@dargueso](https://github.com/dargueso)
 - r3v1 [@r3v1](https://github.com/r3v1)
+- pherodeon [@pherodeon](https://github.com/pherodeon)
