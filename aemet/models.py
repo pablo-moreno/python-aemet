@@ -189,7 +189,7 @@ class PrediccionMaritima:
 
 
 class Observacion:
-    def __init__(self, idema, lon, lat, fint, prec, alt, vmax, vv, dv, dmax, ubi):
+    def __init__(self, idema, lon, lat, fint, prec, alt, vmax, vv, dv, dmax, ubi, hr, tamin, ta, tamax):
         self.idema = idema
         self.lon = lon
         self.lat = lat
@@ -201,6 +201,10 @@ class Observacion:
         self.dv = dv
         self.dmax = dmax
         self.ubi = ubi
+        self.hr = hr
+        self.tamin = tamin
+        self.ta = ta
+        self.tamax = tamax
 
     @staticmethod
     def from_json(data, multiple=False):
@@ -220,6 +224,10 @@ class Observacion:
                         dv=o.get('dv', ''),
                         dmax=o.get('dmax', ''),
                         ubi=o.get('ubi', ''),
+                        hr=o.get('hr', ''),
+                        tamin=o.get('tamin', ''),
+                        ta=o.get('ta', ''),
+                        tamax=o.get('tamax', ''),
                     )
                 )
             return observaciones
@@ -235,6 +243,10 @@ class Observacion:
             dv=data.get('dv', ''),
             dmax=data.get('dmax', ''),
             ubi=data.get('ubi', ''),
+            hr=data.get('hr', ''),
+            tamin=data.get('tamin', ''),
+            ta=data.get('ta', ''),
+            tamax=data.get('tamax', ''),
         )
 
 
