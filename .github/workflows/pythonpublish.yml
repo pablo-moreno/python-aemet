@@ -9,13 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Set env
-      run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
-    - name: Check release tag
-      run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
-          sed -i -- "s/<RELEASE_VERSION>/$RELEASE_VERSION/g" setup.py
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
