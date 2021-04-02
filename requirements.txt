@@ -2,3 +2,4 @@ urllib3
 requests
 click
 fuzzywuzzy
+python-Levenshtein
