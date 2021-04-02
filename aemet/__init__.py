@@ -14,6 +14,7 @@ def main(prediccion, key, keyfile):
     client = Aemet(api_key=key, api_key_file=keyfile)
     municipio = Municipio.buscar(prediccion)
     p = client.get_prediccion(municipio.get_codigo())
+    print(f"Predicción de temperaturas para {municipio.nombre}:\n")
     for dia in p.prediccion:
         print(dia.fecha)
         print("Máxima: {}".format(dia.temperatura["maxima"]))
