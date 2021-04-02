@@ -3,6 +3,7 @@ import json
 import urllib3
 from datetime import datetime
 from fuzzywuzzy import fuzz
+# ToDo: eliminar este import de todos los elementos del modulo
 from aemet.constants import *
 
 # Disable Insecure Request Warnings
