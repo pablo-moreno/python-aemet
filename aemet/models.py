@@ -2,6 +2,7 @@ import requests
 import json
 import urllib3
 from datetime import datetime
+from fuzzywuzzy import fuzz
 from aemet.constants import *
 
 # Disable Insecure Request Warnings
@@ -279,15 +280,17 @@ class Municipio:
     @staticmethod
     def buscar(nombre):
         """
-        Devuelve una lista con los resultados de la búsqueda
+        Devuelve el resultado de la búsqueda entre todos los municipios de España.
         :param nombre: Nombre del municipio
         """
         try:
-            municipios_raw = list(filter(lambda t: nombre in t.get('NOMBRE'), Municipio.MUNICIPIOS))
-            municipios = list(map(lambda m: Municipio.from_json(m), municipios_raw))
-            return municipios
-        except:
-            return None
+            match_ratios = list(map(lambda m: fuzz.ratio(nombre.lower(), m.get("NOMBRE").lower()), Municipio.MUNICIPIOS))
+            best_match = max(match_ratios)
+            idx_best_match = match_ratios.index(best_match)
+            municipio = Municipio.from_json(Municipio.MUNICIPIOS[idx_best_match])
+            return municipio
+        except e:
+            print(f"Ha habido un error {e}")
 
     def get_codigo(self):
         return '{}{}'.format(self.cpro, self.cmun)

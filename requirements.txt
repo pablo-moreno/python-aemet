@@ -1,3 +1,4 @@
 urllib3
 requests
 click
+fuzzywuzzy
