@@ -284,7 +284,7 @@ class Municipio:
         :param nombre: Nombre del municipio
         """
         try:
-            match_ratios = list(map(lambda m: fuzz.ratio(nombre.lower(), m.get("NOMBRE").lower()), Municipio.MUNICIPIOS))
+            match_ratios = list(map(lambda m: fuzz.token_set_ratio(nombre, m.get("NOMBRE")), Municipio.MUNICIPIOS))
             best_match = max(match_ratios)
             idx_best_match = match_ratios.index(best_match)
             municipio = Municipio.from_json(Municipio.MUNICIPIOS[idx_best_match])
