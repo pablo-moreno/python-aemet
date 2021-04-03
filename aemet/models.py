@@ -1,8 +1,8 @@
-import requests
 import json
+import requests
 import urllib3
 from datetime import datetime
-from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 # ToDo: eliminar este import de todos los elementos del modulo
 from aemet.constants import *
 
@@ -285,9 +285,9 @@ class Municipio:
         :param nombre: Nombre del municipio
         """
         try:
-            match_ratios = list(map(lambda m: fuzz.token_set_ratio(nombre, m.get("NOMBRE")), Municipio.MUNICIPIOS))
-            best_match = max(match_ratios)
-            idx_best_match = match_ratios.index(best_match)
+            nombres_municipios = list(map(lambda m: m.get("NOMBRE"), Municipio.MUNICIPIOS))
+            best_match = process.extractOne(nombre, nombres_municipios)
+            idx_best_match = nombres_municipios.index(best_match[0])
             municipio = Municipio.from_json(Municipio.MUNICIPIOS[idx_best_match])
             return municipio
         except e:
