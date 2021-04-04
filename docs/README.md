@@ -4,30 +4,16 @@
 
 ### Instalar la librería `python-aemet`
 
-- Tener `python3` instalado en el sistema: `which python`
+-   Tener `python3` instalado en el sistema: `which python`
 
-- Instalar la librería en el local. Recomendamos el uso de un `virtualenv`.
+-   Instalar la librería en el local. Recomendamos el uso de un `virtualenv` o un gestor
+    de entornos como `pyenv`.
 
-   E.g. Instala `virtualenv`:
+      Instala la librería
 
-   ```bash
-   pip install virtualenv
-   ```
-
-  Clona el repo `git clone git@github.com:pablo-moreno/python-aemet.git && cd python-aemet`
-
-  Activa el `virtualenv`:
-
-  ```bash
-  virtualenv .venv
-  source .venv/bin/activate
-  ```
-
-  Instala la librería
-
-  ```bash
-  pip install .
-  ```
+    ```bash
+    pip install python-aemet
+    ```
 
 ### Obtener la clave API
 
@@ -42,39 +28,39 @@ Y ponla en un fichero `aemet.key`
 ### Predicción de la temperatura máxima y mínima en un municipio concreto en los próximos días
 
 ```bash
-aemet -p Madrid -f /path/a/la/clave/aemet.key
+aemet -p Huelva -f /path/a/la/clave/aemet.key
 ```
 
 La salida:
 
 ```sh
-Predicción de temperaturas para Madrid:
-
-2021-04-03T00:00:00
-Máxima: 20
-Mínima: 10
+Predicción de temperaturas para Huelva:
 
 2021-04-04T00:00:00
-Máxima: 20
-Mínima: 7
+Máxima: 23
+Mínima: 12
 
 2021-04-05T00:00:00
 Máxima: 22
-Mínima: 7
+Mínima: 13
 
 2021-04-06T00:00:00
-Máxima: 22
-Mínima: 7
+Máxima: 25
+Mínima: 11
 
 2021-04-07T00:00:00
-Máxima: 19
-Mínima: 4
+Máxima: 25
+Mínima: 13
 
 2021-04-08T00:00:00
-Máxima: 18
-Mínima: 9
+Máxima: 23
+Mínima: 12
 
 2021-04-09T00:00:00
-Máxima: 20
-Mínima: 10
+Máxima: 21
+Mínima: 12
+
+2021-04-10T00:00:00
+Máxima: 21
+Mínima: 13
 ```
