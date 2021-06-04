@@ -647,16 +647,13 @@ class Aemet(AemetHttpClient):
         """
         if estacion:
             url = OBSERVACION_CONVENCIONAL_ESTACION_API_URL.format(estacion)
-            data = self.get_request_data(url)
-            if raw:
-                return data
-            return Observacion.from_json(data)
         else:
             url = OBSERVACION_CONVENCIONAL_API_URL
-            data = self.get_request_data(url, todos=True)
-            if raw:
-                return data
-            return Observacion.from_json(data, multiple=True)
+
+        data = self.get_request_data(url, todos=True)
+        if raw:
+            return data
+        return Observacion.from_json(data, multiple=True)
 
     def get_valores_climatologicos_mensuales(self, anyo, estacion, raw=False):
         """
