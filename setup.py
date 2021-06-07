@@ -18,7 +18,7 @@ with open(path.join(here, 'requirements.txt')) as f:
 
 setup(
     name='python-aemet',
-    version='0.3.4',
+    version='0.3.5',
     description=description,
     long_description=long_description,
     url='https://github.com/pablo-moreno/python-aemet',
