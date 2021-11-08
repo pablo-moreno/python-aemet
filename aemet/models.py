@@ -1,7 +1,10 @@
-import requests
 import json
-import urllib3
+import re
 from datetime import datetime
+
+import requests
+import urllib3
+
 from aemet.constants import *
 
 # Disable Insecure Request Warnings
@@ -341,6 +344,7 @@ class Estacion:
                 )
             )
         return result
+
 
 class AemetHttpClient(object):
     def __init__(self, api_key=API_KEY, api_key_file='', headers=dict(), querystring=dict(), verbose=False):
@@ -684,10 +688,32 @@ class Aemet(AemetHttpClient):
         # TODO
         return data
 
-    def get_contaminacion_fondo(self, estacion):
-        # TODO
+    def get_contaminacion_fondo(self, estacion, raw=False):
+        """
+        Obtiene los datos de contaminación de fondo. (último elaborado)
+
+        :param estacion: identificador de la estación
+        :return: Devuelve list si raw=True, si no, dict
+        """
         url = CONTAMINACION_FONDO_ESTACION_API_URL.format(estacion)
-        data = self.get_request_normalized_data(url).splitlines()
+        try:
+            data = self.get_request_normalized_data(url)
+
+            if type(data) == str:
+                data = data.splitlines()
+
+                if not raw:
+                    # Return JSON
+                    regex = re.compile(r"(\w+\(\d+\)): (.?\d{5}\.\d{2}) (\w+/[\w\d]+)?")
+                    data_ = {}
+
+                    for l in data:
+                        info = {k: float(v) for k, v, _ in regex.findall(l)}
+                        data_[l[:16]] = info
+                    data = data_
+        except:
+            data = None
+
         return data
 
     def get_prediccion_maritima(self, tipo=TIPO_COSTERA, costa='', area='', raw=False):
