@@ -688,7 +688,7 @@ class Aemet(AemetHttpClient):
         # TODO
         return data
 
-    def get_contaminacion_fondo(self, estacion, raw=False):
+    def get_contaminacion_fondo(self, estacion, raw=True):
         """
         Obtiene los datos de contaminación de fondo. (último elaborado)
 
