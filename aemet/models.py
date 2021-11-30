@@ -429,7 +429,7 @@ class AemetHttpClient(object):
 
         return r.json()
 
-    def get_request_normalized_data(self, url):
+    def get_request_normalized_data(self, url, raw=False):
         """
         Return the request raw content data
         """
@@ -443,7 +443,10 @@ class AemetHttpClient(object):
         )
         if r.status_code == 200:
             r = requests.get(r.json().get('datos'), verify=False)
-            data = r.text
+            if raw:
+                data = r.content
+            else:
+                data = r.text
             return data
         return {
             'error': r.status_code
@@ -882,3 +885,13 @@ class Aemet(AemetHttpClient):
             raise Exception('Error: Debes establecer un número de mes válido (1-12)')
         url = RESUMEN_CLIMATOLOGICO_MENSUAL_API_URL.format(anyo, mes)
         return self.download_file_from_url(url, archivo_salida)
+
+    def descargar_avisos_cap(self, area):
+        """
+        Últimos Avisos de Fenómenos Meteorológicos adversos elaborado para el área seleccionada.
+        Devuelve un fichero .tar
+        :param area: Código de la comunidad autónoma
+        """
+        data = self.get_request_normalized_data(AVISOS_CAP.format(area), raw=True)
+
+        return data
