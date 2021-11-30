@@ -49,6 +49,7 @@ RADAR_REGIONAL_API_URL = BASE_URL + '/red/radar/regional/{}'
 SATELITE_SST = BASE_URL + '/satelites/producto/sst/'
 SATELITE_NVDI = BASE_URL + '/satelites/producto/nvdi/'
 CONTAMINACION_FONDO_ESTACION_API_URL = BASE_URL + '/red/especial/contaminacionfondo/estacion/{}/'
+AVISOS_CAP = BASE_URL + "/avisos_cap/ultimoelaborado/area/{}"
 
 # Params
 MAPAS_SIGNIFICATIVOS_DIAS = {
