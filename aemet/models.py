@@ -589,7 +589,7 @@ class Aemet(AemetHttpClient):
             raise Exception('No puedes especificar una "provincia" o "ccaa" cuando "ambito=NACIONAL"')
         url = PREDICCION_NORMALIZADA_API_URL.format(ambito, dia, ccaa + provincia)
         if fecha_elaboracion:
-            url += 'elaboracion/{}/'.format(fecha_elaboracion)
+            url += '/elaboracion/{}/'.format(fecha_elaboracion)
         return self.get_request_normalized_data(url)
 
     def get_prediccion_especifica_montanya(self, area, dia=-1, raw=False):
